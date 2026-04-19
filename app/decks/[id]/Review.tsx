@@ -5,7 +5,7 @@ import Link from "next/link";
 import { submitReview } from "./actions";
 import type { Card } from "./page";
 
-const INLINE_LIMIT = 5;
+const INLINE_LIMIT = 3;
 
 export function Review({
   deck,
