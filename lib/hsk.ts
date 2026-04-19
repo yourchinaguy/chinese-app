@@ -40,6 +40,17 @@ export function allHskEntries(): HskEntry[] {
   return entries;
 }
 
+// Strip CC-CEDICT metadata that leaks into the translations array:
+// classifiers (`CL:個|个[gè]`), variant cross-refs (`位[wèi]`), empties.
+// What remains is the list of real English meanings.
+const VARIANT_REF = /^[\u4e00-\u9fff]+\[/u;
+export function cleanTranslations(entry: HskEntry | null): string[] {
+  if (!entry) return [];
+  return entry.translations
+    .map((t) => t.trim())
+    .filter((t) => t && !t.startsWith("CL:") && !VARIANT_REF.test(t));
+}
+
 export function sampleCalibrationWords(perLevel = 10): HskEntry[] {
   const out: HskEntry[] = [];
   for (const level of [1, 2, 3, 4, 5, 6] as HskLevel[]) {

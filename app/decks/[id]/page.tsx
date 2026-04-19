@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { cleanTranslations, getHskEntry } from "@/lib/hsk";
 import { Review } from "./Review";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +12,7 @@ export type Card = {
   hanzi: string;
   pinyin: string | null;
   gloss: string | null;
+  glosses: string[];
   hsk_level: number | null;
   example_sentence: string | null;
   box: number;
@@ -42,16 +44,24 @@ async function loadDeck(id: number): Promise<{ deck: Deck; due: Card[]; total: n
     args: [id],
   });
 
-  const due: Card[] = dueRes.rows.map((row) => ({
-    id: Number(row.id),
-    hanzi: String(row.hanzi),
-    pinyin: row.pinyin === null ? null : String(row.pinyin),
-    gloss: row.gloss === null ? null : String(row.gloss),
-    hsk_level: row.hsk_level === null ? null : Number(row.hsk_level),
-    example_sentence: row.example_sentence === null ? null : String(row.example_sentence),
-    box: Number(row.box),
-    due_at: Number(row.due_at),
-  }));
+  const due: Card[] = dueRes.rows.map((row) => {
+    const hanzi = String(row.hanzi);
+    // Re-derive the full translations list from HSK data at read time.
+    // The cards table only stores the primary gloss; for HSK words we have
+    // the richer list available, and context-dependent meanings matter.
+    const glosses = cleanTranslations(getHskEntry(hanzi));
+    return {
+      id: Number(row.id),
+      hanzi,
+      pinyin: row.pinyin === null ? null : String(row.pinyin),
+      gloss: row.gloss === null ? null : String(row.gloss),
+      glosses,
+      hsk_level: row.hsk_level === null ? null : Number(row.hsk_level),
+      example_sentence: row.example_sentence === null ? null : String(row.example_sentence),
+      box: Number(row.box),
+      due_at: Number(row.due_at),
+    };
+  });
 
   return { deck, due, total: Number(totalRes.rows[0].c) };
 }

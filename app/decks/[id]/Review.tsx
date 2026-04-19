@@ -96,17 +96,16 @@ export function Review({
           </div>
 
           {revealed && (
-            <div className="mt-6 space-y-2">
+            <div className="mt-6 space-y-3">
               {current.pinyin && (
                 <div className="text-2xl text-zinc-600 dark:text-zinc-400">
                   {current.pinyin}
                 </div>
               )}
-              {current.gloss && (
-                <div className="text-lg text-zinc-800 dark:text-zinc-200">
-                  {current.gloss}
-                </div>
-              )}
+              <Meanings
+                glosses={current.glosses}
+                fallback={current.gloss}
+              />
               {current.example_sentence && (
                 <div className="mt-4 max-w-md rounded-md border border-zinc-200 p-3 text-base leading-relaxed text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
                   {current.example_sentence}
@@ -143,5 +142,35 @@ export function Review({
         </div>
       )}
     </main>
+  );
+}
+
+function Meanings({
+  glosses,
+  fallback,
+}: {
+  glosses: string[];
+  fallback: string | null;
+}) {
+  if (glosses.length === 0) {
+    if (!fallback) return null;
+    return (
+      <div className="text-lg text-zinc-800 dark:text-zinc-200">{fallback}</div>
+    );
+  }
+  if (glosses.length === 1) {
+    return (
+      <div className="text-lg text-zinc-800 dark:text-zinc-200">{glosses[0]}</div>
+    );
+  }
+  return (
+    <ol className="mx-auto max-w-md space-y-1 text-left text-base text-zinc-800 dark:text-zinc-200">
+      {glosses.map((g, i) => (
+        <li key={i} className="flex gap-2">
+          <span className="text-zinc-400 tabular-nums">{i + 1}.</span>
+          <span>{g}</span>
+        </li>
+      ))}
+    </ol>
   );
 }
