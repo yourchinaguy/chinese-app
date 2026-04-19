@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { submitReview } from "./actions";
 import type { Card } from "./page";
+
+const INLINE_LIMIT = 5;
 
 export function Review({
   deck,
@@ -105,6 +107,7 @@ export function Review({
               <Meanings
                 glosses={current.glosses}
                 fallback={current.gloss}
+                cardKey={current.id}
               />
               {current.example_sentence && (
                 <div className="mt-4 max-w-md rounded-md border border-zinc-200 p-3 text-base leading-relaxed text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
@@ -148,10 +151,16 @@ export function Review({
 function Meanings({
   glosses,
   fallback,
+  cardKey,
 }: {
   glosses: string[];
   fallback: string | null;
+  cardKey: number;
 }) {
+  const [showAll, setShowAll] = useState(false);
+  // Reset the "show all" toggle whenever we move to a different card.
+  useEffect(() => setShowAll(false), [cardKey]);
+
   if (glosses.length === 0) {
     if (!fallback) return null;
     return (
@@ -163,14 +172,29 @@ function Meanings({
       <div className="text-lg text-zinc-800 dark:text-zinc-200">{glosses[0]}</div>
     );
   }
+
+  const overflow = glosses.length > INLINE_LIMIT;
+  const visible = overflow && !showAll ? glosses.slice(0, INLINE_LIMIT) : glosses;
+
   return (
-    <ol className="mx-auto max-w-md space-y-1 text-left text-base text-zinc-800 dark:text-zinc-200">
-      {glosses.map((g, i) => (
-        <li key={i} className="flex gap-2">
-          <span className="text-zinc-400 tabular-nums">{i + 1}.</span>
-          <span>{g}</span>
-        </li>
-      ))}
-    </ol>
+    <div className="mx-auto max-w-md text-left">
+      <ol className="space-y-1 text-base text-zinc-800 dark:text-zinc-200">
+        {visible.map((g, i) => (
+          <li key={i} className="flex gap-2">
+            <span className="text-zinc-400 tabular-nums">{i + 1}.</span>
+            <span>{g}</span>
+          </li>
+        ))}
+      </ol>
+      {overflow && !showAll && (
+        <button
+          type="button"
+          onClick={() => setShowAll(true)}
+          className="mt-2 text-sm text-zinc-500 underline hover:text-zinc-800 dark:hover:text-zinc-200"
+        >
+          Show all {glosses.length} meanings
+        </button>
+      )}
+    </div>
   );
 }

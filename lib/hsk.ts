@@ -41,14 +41,22 @@ export function allHskEntries(): HskEntry[] {
 }
 
 // Strip CC-CEDICT metadata that leaks into the translations array:
-// classifiers (`CL:個|个[gè]`), variant cross-refs (`位[wèi]`), empties.
-// What remains is the list of real English meanings.
-const VARIANT_REF = /^[\u4e00-\u9fff]+\[/u;
+// classifiers (`CL:個|个[gè]`), variant cross-refs (`位[wèi]`,
+// `點|点[diǎn]`), bare classifier characters (`份`, `個|个`), empties.
+// Hanzi-range + pipe so variant notation `點|点` is treated as one run.
+const VARIANT_REF = /^[\u4e00-\u9fff|]+\[/u;
+const BARE_CHINESE = /^[\u4e00-\u9fff|]+$/u;
 export function cleanTranslations(entry: HskEntry | null): string[] {
   if (!entry) return [];
   return entry.translations
     .map((t) => t.trim())
-    .filter((t) => t && !t.startsWith("CL:") && !VARIANT_REF.test(t));
+    .filter((t) => {
+      if (!t) return false;
+      if (t.startsWith("CL:")) return false;
+      if (VARIANT_REF.test(t)) return false;
+      if (BARE_CHINESE.test(t)) return false;
+      return true;
+    });
 }
 
 export function sampleCalibrationWords(perLevel = 10): HskEntry[] {
