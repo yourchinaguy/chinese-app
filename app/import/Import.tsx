@@ -365,36 +365,88 @@ function CaptureHelp({ defaultOpen }: { defaultOpen: boolean }) {
       <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium">
         How do I get text from a photo or sign into the app?
       </summary>
-      <div className="space-y-4 border-t border-zinc-200 p-4 text-sm dark:border-zinc-800">
+      <div className="space-y-5 border-t border-zinc-200 p-4 text-sm dark:border-zinc-800">
         <div>
-          <div className="font-medium">iPhone — from a sign in front of you (fastest)</div>
+          <div className="font-medium">
+            iPhone — take a photo first, then copy the text (most reliable)
+          </div>
           <ol className="mt-1 list-decimal space-y-1 pl-5 text-zinc-700 dark:text-zinc-300">
-            <li>Open the <strong>Camera</strong> app and point at the sign.</li>
-            <li>Tap the <strong>Live Text icon</strong> — three stacked lines inside a small square, usually bottom-right of the frame. It only appears once the camera detects text.</li>
-            <li>Drag across the Chinese to select it → tap <strong>Copy</strong>.</li>
-            <li>Switch back to this page, long-press the text area below, tap <strong>Paste</strong>.</li>
-          </ol>
-        </div>
-        <div>
-          <div className="font-medium">iPhone — from a photo you already took</div>
-          <ol className="mt-1 list-decimal space-y-1 pl-5 text-zinc-700 dark:text-zinc-300">
+            <li>Snap a photo of the sign with the <strong>Camera</strong> app.</li>
             <li>Open the photo in the <strong>Photos</strong> app.</li>
-            <li>Long-press the Chinese text in the image — it becomes selectable.</li>
-            <li>Drag to select → tap <strong>Copy</strong>.</li>
-            <li>Come back here, paste.</li>
+            <li>
+              Look for the <strong>Live Text icon</strong> in the bottom-right of the photo —
+              three horizontal lines inside a square with a dotted border. Tap it.
+              (Or just long-press directly on the Chinese text in the image.)
+            </li>
+            <li>Drag across the Chinese to select → tap <strong>Copy</strong>.</li>
+            <li>Come back here, long-press the text area below, tap <strong>Paste</strong>.</li>
           </ol>
         </div>
+
         <div>
-          <div className="font-medium">Android</div>
+          <div className="font-medium">
+            iPhone — directly from the Camera viewfinder (if it shows up)
+          </div>
+          <p className="mt-1 text-zinc-700 dark:text-zinc-300">
+            When the Camera is pointed at clear, well-lit text, a yellow{" "}
+            <strong>Live Text badge</strong> appears on the text itself, and the Live Text
+            icon lights up in the bottom-right. Tap it → select → Copy.
+            If it doesn&rsquo;t appear, use the photo-first flow above — it always works.
+          </p>
+        </div>
+
+        <div className="rounded-md bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-900/20 dark:text-amber-100">
+          <strong>Live Text icon not showing? Check these in Settings:</strong>
+          <ul className="mt-1 list-disc pl-5 space-y-0.5">
+            <li>
+              <em>Settings → General → Language &amp; Region → Live Text</em> must be{" "}
+              <strong>on</strong>.
+            </li>
+            <li>
+              You need <strong>iOS 16 or newer</strong> for Chinese (Simplified &amp;
+              Traditional) Live Text. iOS 15 only supports English and a few other languages.
+            </li>
+            <li>
+              iPhone model: works on <strong>iPhone XS / XR or newer</strong>. Older
+              devices don&rsquo;t have it.
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <div className="font-medium">
+            Fallback that works anywhere: Google Translate
+          </div>
           <ol className="mt-1 list-decimal space-y-1 pl-5 text-zinc-700 dark:text-zinc-300">
-            <li>Open <strong>Google Lens</strong> (or your camera&rsquo;s &ldquo;translate&rdquo; / text mode).</li>
-            <li>Point at the sign, tap the shutter or the text icon.</li>
-            <li>Tap <strong>Select all</strong> → <strong>Copy text</strong>.</li>
+            <li>
+              Install <strong>Google Translate</strong> (free, iOS &amp; Android) and
+              download the Chinese pack for offline use.
+            </li>
+            <li>Open the app → tap the <strong>Camera</strong> tab.</li>
+            <li>Point at the sign. It auto-detects Chinese.</li>
+            <li>
+              Tap <strong>Scan</strong> (or just hold still), then tap <strong>Select all</strong>{" "}
+              or drag to highlight the Chinese.
+            </li>
+            <li>Tap <strong>Copy</strong> → come back here → paste.</li>
+          </ol>
+        </div>
+
+        <div>
+          <div className="font-medium">Android (native)</div>
+          <ol className="mt-1 list-decimal space-y-1 pl-5 text-zinc-700 dark:text-zinc-300">
+            <li>Open <strong>Google Lens</strong> (pre-installed or in the Google app).</li>
+            <li>Point at the sign → tap the shutter.</li>
+            <li>Select the Chinese → <strong>Copy text</strong>.</li>
             <li>Come back here and paste.</li>
           </ol>
         </div>
+
         <div className="rounded-md bg-zinc-100 p-3 text-xs text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
-          <strong>Why no in-app camera?</strong> iPhone and Android already have best-in-class Chinese OCR built in, on-device, offline. Re-implementing it would mean either a paid OCR API or a large bundled model — both worse than what your phone already does for free.
+          <strong>Why no in-app camera?</strong> iPhone and Android already have best-in-class
+          Chinese OCR built in, on-device, offline. Building our own would mean either a paid
+          OCR API or a large bundled model — both worse than what your phone already does
+          for free.
         </div>
       </div>
     </details>
