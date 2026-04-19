@@ -26,10 +26,10 @@ async function inferDefaultLevel(): Promise<HskLevel> {
   return inferred ?? FALLBACK_LEVEL;
 }
 
-type Kind = "article" | "transcript" | "image-text" | "other";
+type Kind = "article" | "transcript" | "other";
 
 function isKind(x: unknown): x is Kind {
-  return x === "article" || x === "transcript" || x === "image-text" || x === "other";
+  return x === "article" || x === "transcript" || x === "other";
 }
 
 function firstParam(v: string | string[] | undefined): string | undefined {
