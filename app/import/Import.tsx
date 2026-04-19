@@ -125,6 +125,7 @@ export function Import({
           </label>
         </div>
 
+        <KindHelp kind={kind} />
 
         <label className="block">
           <span className="text-sm font-medium">Chinese text</span>
@@ -343,6 +344,86 @@ function fitVerdict(targetPct: number, tooHardPct: number) {
     className: "text-emerald-700 dark:text-emerald-300",
     message: "Good fit — the target section is where new vocabulary lives.",
   };
+}
+
+function KindHelp({ kind }: { kind: Kind }) {
+  return (
+    <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+      {kind === "article" && <ArticleHelp />}
+      {kind === "transcript" && <TranscriptHelp />}
+      {kind === "other" && <OtherHelp />}
+    </div>
+  );
+}
+
+function ArticleHelp() {
+  return (
+    <div className="space-y-1">
+      <div className="font-medium text-zinc-900 dark:text-zinc-100">How to grab an article</div>
+      <ol className="ml-4 list-decimal space-y-0.5">
+        <li>
+          Open it in your browser. If it&rsquo;s cluttered with nav and ads,
+          use <strong>Reader Mode</strong> first (Safari: <kbd>⌘⇧R</kbd>;
+          Chrome: three-dot menu → Cast, share, and more → Distill).
+        </li>
+        <li>Select just the article body — skip headers, menus, comments.</li>
+        <li>Copy → paste into the box below.</li>
+      </ol>
+      <div className="text-xs text-zinc-500">
+        Good sources for business Chinese: <em>36氪, 虎嗅, 财经, 晚点LatePost</em>.
+        For WeChat articles, open the share link in Safari first.
+      </div>
+    </div>
+  );
+}
+
+function TranscriptHelp() {
+  return (
+    <div className="space-y-2">
+      <div className="font-medium text-zinc-900 dark:text-zinc-100">How to get a podcast transcript</div>
+      <ol className="ml-4 list-decimal space-y-1">
+        <li>
+          <strong>Check the show&rsquo;s own site or the episode page on{" "}
+          <a href="https://www.xiaoyuzhoufm.com" target="_blank" rel="noreferrer" className="underline">小宇宙</a></strong>
+          {" "}— many Chinese podcasts (声东击西, 商业就是这样, 硅谷101 …) publish
+          episode notes with a full transcript or generous excerpts. Copy what&rsquo;s there.
+        </li>
+        <li>
+          <strong>YouTube episode?</strong> Paste the video URL into{" "}
+          <a href="https://youtubetotranscript.com" target="_blank" rel="noreferrer" className="underline">
+            youtubetotranscript.com
+          </a>{" "}
+          (free). It pulls YouTube&rsquo;s auto-generated captions in Chinese.
+        </li>
+        <li>
+          <strong>No transcript anywhere?</strong> Run the audio through{" "}
+          <a href="https://goodsnooze.gumroad.com/l/macwhisper" target="_blank" rel="noreferrer" className="underline">
+            MacWhisper
+          </a>{" "}
+          (Mac app, one-time purchase, runs locally, handles Chinese well).
+          Drop the mp3 in, pick the Chinese model, export the text.
+        </li>
+      </ol>
+      <div className="text-xs text-zinc-500">
+        Paste the transcript below. Shorter excerpts (a few paragraphs) usually
+        work better than full 1-hour transcripts — too much &ldquo;too hard&rdquo;
+        content will discourage you.
+      </div>
+    </div>
+  );
+}
+
+function OtherHelp() {
+  return (
+    <div className="space-y-1">
+      <div className="font-medium text-zinc-900 dark:text-zinc-100">Any other Chinese text</div>
+      <p>
+        Chat messages, textbook chapters, song lyrics, microblog posts, dialog
+        from a lesson, handwritten notes (type them out) — anything goes. Just
+        paste it below.
+      </p>
+    </div>
+  );
 }
 
 function dedupe<T extends { hanzi: string }>(list: T[]): T[] {
