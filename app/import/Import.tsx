@@ -15,10 +15,18 @@ const verdictStyles: Record<Verdict, string> = {
   BEYOND_HSK: "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300",
 };
 
-export function Import({ defaultLevel }: { defaultLevel: HskLevel }) {
-  const [text, setText] = useState("");
-  const [title, setTitle] = useState("");
-  const [kind, setKind] = useState<Kind>("article");
+type Prefill = { text: string; title: string; kind: Kind };
+
+export function Import({
+  defaultLevel,
+  prefill,
+}: {
+  defaultLevel: HskLevel;
+  prefill?: Prefill;
+}) {
+  const [text, setText] = useState(prefill?.text ?? "");
+  const [title, setTitle] = useState(prefill?.title ?? "");
+  const [kind, setKind] = useState<Kind>(prefill?.kind ?? "article");
   const [level, setLevel] = useState<HskLevel>(defaultLevel);
   const [result, setResult] = useState<GradeResult | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -117,6 +125,8 @@ export function Import({ defaultLevel }: { defaultLevel: HskLevel }) {
             />
           </label>
         </div>
+
+        <CaptureHelp defaultOpen={kind === "image-text"} />
 
         <label className="block">
           <span className="text-sm font-medium">Chinese text</span>
@@ -344,4 +354,49 @@ function dedupe<T extends { hanzi: string }>(list: T[]): T[] {
     seen.add(w.hanzi);
     return true;
   });
+}
+
+function CaptureHelp({ defaultOpen }: { defaultOpen: boolean }) {
+  return (
+    <details
+      open={defaultOpen}
+      className="rounded-md border border-zinc-200 dark:border-zinc-800"
+    >
+      <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium">
+        How do I get text from a photo or sign into the app?
+      </summary>
+      <div className="space-y-4 border-t border-zinc-200 p-4 text-sm dark:border-zinc-800">
+        <div>
+          <div className="font-medium">iPhone — from a sign in front of you (fastest)</div>
+          <ol className="mt-1 list-decimal space-y-1 pl-5 text-zinc-700 dark:text-zinc-300">
+            <li>Open the <strong>Camera</strong> app and point at the sign.</li>
+            <li>Tap the <strong>Live Text icon</strong> — three stacked lines inside a small square, usually bottom-right of the frame. It only appears once the camera detects text.</li>
+            <li>Drag across the Chinese to select it → tap <strong>Copy</strong>.</li>
+            <li>Switch back to this page, long-press the text area below, tap <strong>Paste</strong>.</li>
+          </ol>
+        </div>
+        <div>
+          <div className="font-medium">iPhone — from a photo you already took</div>
+          <ol className="mt-1 list-decimal space-y-1 pl-5 text-zinc-700 dark:text-zinc-300">
+            <li>Open the photo in the <strong>Photos</strong> app.</li>
+            <li>Long-press the Chinese text in the image — it becomes selectable.</li>
+            <li>Drag to select → tap <strong>Copy</strong>.</li>
+            <li>Come back here, paste.</li>
+          </ol>
+        </div>
+        <div>
+          <div className="font-medium">Android</div>
+          <ol className="mt-1 list-decimal space-y-1 pl-5 text-zinc-700 dark:text-zinc-300">
+            <li>Open <strong>Google Lens</strong> (or your camera&rsquo;s &ldquo;translate&rdquo; / text mode).</li>
+            <li>Point at the sign, tap the shutter or the text icon.</li>
+            <li>Tap <strong>Select all</strong> → <strong>Copy text</strong>.</li>
+            <li>Come back here and paste.</li>
+          </ol>
+        </div>
+        <div className="rounded-md bg-zinc-100 p-3 text-xs text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+          <strong>Why no in-app camera?</strong> iPhone and Android already have best-in-class Chinese OCR built in, on-device, offline. Re-implementing it would mean either a paid OCR API or a large bundled model — both worse than what your phone already does for free.
+        </div>
+      </div>
+    </details>
+  );
 }
