@@ -2,24 +2,19 @@ import Link from "next/link";
 
 const links = [
   {
-    href: "/playground",
-    title: "Playground",
-    subtitle: "Paste Chinese text, see it segmented and graded against an HSK level.",
-  },
-  {
-    href: "/calibrate",
-    title: "Calibrate",
-    subtitle: "Take the 50-word quiz to establish your known-word baseline. (coming soon)",
+    href: "/decks",
+    title: "Decks",
+    subtitle: "Review your flashcards.",
   },
   {
     href: "/import",
     title: "Import",
-    subtitle: "Paste a blog post, lesson, or podcast transcript → turns into a deck. (coming soon)",
+    subtitle: "Paste a blog post, lesson, or podcast transcript → turns into a deck.",
   },
   {
-    href: "/decks",
-    title: "Decks",
-    subtitle: "Review your flashcards. (coming soon)",
+    href: "/calibrate",
+    title: "Calibrate",
+    subtitle: "Retake the known-word quiz to update your baseline.",
   },
 ];
 
