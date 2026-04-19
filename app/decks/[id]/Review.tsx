@@ -111,7 +111,10 @@ export function Review({
               />
               {current.example_sentence && (
                 <div className="mt-4 max-w-md rounded-md border border-zinc-200 p-3 text-base leading-relaxed text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
-                  {current.example_sentence}
+                  <HighlightedSentence
+                    sentence={current.example_sentence}
+                    hanzi={current.hanzi}
+                  />
                 </div>
               )}
             </div>
@@ -145,6 +148,44 @@ export function Review({
         </div>
       )}
     </main>
+  );
+}
+
+function HighlightedSentence({
+  sentence,
+  hanzi,
+}: {
+  sentence: string;
+  hanzi: string;
+}) {
+  if (!hanzi) return <>{sentence}</>;
+  const parts: { text: string; match: boolean }[] = [];
+  let cursor = 0;
+  while (cursor < sentence.length) {
+    const at = sentence.indexOf(hanzi, cursor);
+    if (at === -1) {
+      parts.push({ text: sentence.slice(cursor), match: false });
+      break;
+    }
+    if (at > cursor) parts.push({ text: sentence.slice(cursor, at), match: false });
+    parts.push({ text: hanzi, match: true });
+    cursor = at + hanzi.length;
+  }
+  return (
+    <>
+      {parts.map((p, i) =>
+        p.match ? (
+          <mark
+            key={i}
+            className="rounded bg-amber-200/70 px-0.5 font-medium text-amber-950 dark:bg-amber-500/30 dark:text-amber-100"
+          >
+            {p.text}
+          </mark>
+        ) : (
+          <span key={i}>{p.text}</span>
+        ),
+      )}
+    </>
   );
 }
 
