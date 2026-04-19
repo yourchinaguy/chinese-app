@@ -14,18 +14,23 @@ export function Review({
   cards: Card[];
   total: number;
 }) {
+  // Freeze the deck on mount. Server-action revalidation re-renders this
+  // component with a shorter cards array (the just-graded card is no longer
+  // due), which would briefly show the wrong card mid-transition. The session
+  // works off a stable snapshot.
+  const [sessionCards] = useState(cards);
   const [idx, setIdx] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [pending, startTransition] = useTransition();
   const [finished, setFinished] = useState(false);
 
-  const current = cards[idx];
+  const current = sessionCards[idx];
 
   function grade(gotIt: boolean) {
     if (!current) return;
     startTransition(async () => {
       await submitReview(current.id, gotIt);
-      if (idx + 1 < cards.length) {
+      if (idx + 1 < sessionCards.length) {
         setIdx(idx + 1);
         setRevealed(false);
       } else {
@@ -47,7 +52,7 @@ export function Review({
         </div>
         <h1 className="text-2xl font-semibold">{deck.name}</h1>
         <div className="mt-10 rounded-lg border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-700">
-          <p className="text-lg">Session done — {cards.length} reviewed.</p>
+          <p className="text-lg">Session done — {sessionCards.length} reviewed.</p>
           <p className="mt-1 text-sm text-zinc-500">
             Words you got right won&rsquo;t show again until their interval ends
             (1 → 2 → 4 → 8 → 16 days). Misses come back tomorrow.
@@ -59,7 +64,7 @@ export function Review({
 
   if (!current) return null;
 
-  const progress = Math.round((idx / cards.length) * 100);
+  const progress = Math.round((idx / sessionCards.length) * 100);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-xl flex-col px-6 py-6">
@@ -71,7 +76,7 @@ export function Review({
           ← decks
         </Link>
         <span className="text-xs uppercase tracking-wide text-zinc-500">
-          {idx + 1} / {cards.length} · box {current.box}
+          {idx + 1} / {sessionCards.length} · box {current.box}
         </span>
       </div>
 
