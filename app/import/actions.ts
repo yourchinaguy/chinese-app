@@ -22,7 +22,7 @@ export async function analyzeText(
 
 export type CreateDeckInput = {
   title: string;
-  kind: "article" | "transcript" | "other";
+  kind: "article" | "podcast" | "other";
   text: string;
   selectedHanzi: string[];
 };

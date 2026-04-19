@@ -6,7 +6,7 @@ import { analyzeText, createDeck } from "./actions";
 import type { GradeResult, GradedWord, Verdict } from "@/lib/grade";
 import type { HskLevel } from "@/lib/hsk";
 
-type Kind = "article" | "transcript" | "other";
+type Kind = "article" | "podcast" | "other";
 
 const verdictStyles: Record<Verdict, string> = {
   KNOWN: "bg-emerald-100 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-200",
@@ -107,8 +107,8 @@ export function Import({
               onChange={(e) => setKind(e.target.value as Kind)}
               className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
             >
-              <option value="article">Article / blog post</option>
-              <option value="transcript">Podcast transcript</option>
+              <option value="article">Article</option>
+              <option value="podcast">Podcast</option>
               <option value="other">Other</option>
             </select>
           </label>
@@ -350,7 +350,7 @@ function KindHelp({ kind }: { kind: Kind }) {
   return (
     <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
       {kind === "article" && <ArticleHelp />}
-      {kind === "transcript" && <TranscriptHelp />}
+      {kind === "podcast" && <PodcastHelp />}
       {kind === "other" && <OtherHelp />}
     </div>
   );
@@ -377,7 +377,7 @@ function ArticleHelp() {
   );
 }
 
-function TranscriptHelp() {
+function PodcastHelp() {
   return (
     <div className="space-y-2">
       <div className="font-medium text-zinc-900 dark:text-zinc-100">How to get a podcast transcript</div>
