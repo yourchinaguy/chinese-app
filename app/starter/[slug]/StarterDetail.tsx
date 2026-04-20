@@ -9,6 +9,7 @@ export function StarterDetail({ article }: { article: StarterArticle }) {
     Math.max(1, article.suggestedHsk - 1) as 1 | 2 | 3 | 4 | 5 | 6,
   );
   const [copied, setCopied] = useState<"prompt" | "text" | null>(null);
+  const [simplified, setSimplified] = useState("");
 
   const simplifyPrompt = buildSimplifyPrompt(article.text, level);
 
@@ -31,6 +32,15 @@ export function StarterDetail({ article }: { article: StarterArticle }) {
       text: article.text,
       kind: "article",
     }).toString();
+
+  const simplifiedImportHref = simplified.trim()
+    ? "/import?" +
+      new URLSearchParams({
+        title: `${article.title}（HSK ${level} 改写）`,
+        text: simplified,
+        kind: "article",
+      }).toString()
+    : null;
 
   return (
     <div className="mt-8 space-y-8">
@@ -65,68 +75,96 @@ export function StarterDetail({ article }: { article: StarterArticle }) {
           Simplify this to your level first
         </h2>
         <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
-          If the original feels too hard, let Claude rewrite it for you. Copy
-          the prompt below, paste into{" "}
-          <a
-            href="https://claude.ai/new"
-            target="_blank"
-            rel="noreferrer"
-            className="underline"
-          >
-            claude.ai
-          </a>{" "}
-          (your Max Plan covers this), then copy the result back and use it in{" "}
-          <Link href="/import" className="underline">
-            Import
-          </Link>
-          .
+          Three steps. Your Max Plan covers the claude.ai side; no API spend.
         </p>
 
-        <label className="mt-4 block">
-          <span className="text-sm font-medium">
-            Target HSK level for rewrite: {level}
-          </span>
-          <input
-            type="range"
-            min={1}
-            max={6}
-            value={level}
-            onChange={(e) =>
-              setLevel(Number(e.target.value) as 1 | 2 | 3 | 4 | 5 | 6)
-            }
-            className="mt-1 w-full"
-          />
-          <span className="text-xs text-zinc-500">
-            Pick one below your target; the prompt keeps ~20% just above it so
-            you still have new vocabulary to learn.
-          </span>
-        </label>
+        <ol className="mt-4 space-y-4 text-sm">
+          <li>
+            <div className="font-medium">1. Pick your target level and copy the prompt</div>
+            <label className="mt-2 block">
+              <span className="text-sm">Target HSK level: {level}</span>
+              <input
+                type="range"
+                min={1}
+                max={6}
+                value={level}
+                onChange={(e) =>
+                  setLevel(Number(e.target.value) as 1 | 2 | 3 | 4 | 5 | 6)
+                }
+                className="mt-1 w-full"
+              />
+              <span className="text-xs text-zinc-500">
+                The prompt keeps ~20% at HSK {Math.min(6, level + 1)} so you have new
+                vocabulary to learn.
+              </span>
+            </label>
+            <details className="mt-2">
+              <summary className="cursor-pointer select-none text-xs text-zinc-600 dark:text-zinc-400">
+                View the full prompt
+              </summary>
+              <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-white p-3 text-xs text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+                {simplifyPrompt}
+              </pre>
+            </details>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button
+                onClick={copyPrompt}
+                className="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-500"
+              >
+                {copied === "prompt" ? "Copied ✓" : "Copy simplify prompt"}
+              </button>
+            </div>
+          </li>
 
-        <details className="mt-4">
-          <summary className="cursor-pointer select-none text-sm font-medium">
-            View the prompt
-          </summary>
-          <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-white p-3 text-xs text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
-            {simplifyPrompt}
-          </pre>
-        </details>
+          <li>
+            <div className="font-medium">2. Paste into claude.ai, copy the rewrite back</div>
+            <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+              Opens in a new tab. Paste the prompt you just copied, wait for
+              the rewrite, then select-all &amp; copy Claude&rsquo;s reply.
+            </p>
+            <a
+              href="https://claude.ai/new"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-block rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm hover:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+            >
+              Open claude.ai →
+            </a>
+          </li>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            onClick={copyPrompt}
-            className="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-500"
-          >
-            {copied === "prompt" ? "Copied ✓" : "Copy simplify prompt"}
-          </button>
-          <a
-            href="https://claude.ai/new"
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm hover:border-zinc-500 dark:border-zinc-700"
-          >
-            Open claude.ai →
-          </a>
-        </div>
+          <li>
+            <div className="font-medium">3. Paste the rewrite below</div>
+            <textarea
+              value={simplified}
+              onChange={(e) => setSimplified(e.target.value)}
+              rows={8}
+              placeholder="Paste Claude&rsquo;s rewritten Chinese text here…"
+              className="mt-2 w-full rounded-md border border-zinc-300 bg-white p-3 text-base leading-relaxed dark:border-zinc-700 dark:bg-zinc-900"
+            />
+            <div className="mt-2 flex items-center gap-3">
+              <span className="text-xs text-zinc-500">
+                {countChars(simplified)} Chinese chars
+                {simplified.trim() &&
+                  ` · original was ${countChars(article.text)}`}
+              </span>
+              {simplifiedImportHref ? (
+                <Link
+                  href={simplifiedImportHref}
+                  className="ml-auto rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-500"
+                >
+                  Import simplified version →
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  className="ml-auto rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white opacity-40"
+                >
+                  Import simplified version →
+                </button>
+              )}
+            </div>
+          </li>
+        </ol>
       </section>
     </div>
   );
