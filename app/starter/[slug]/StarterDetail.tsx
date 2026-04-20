@@ -123,7 +123,7 @@ export function StarterDetail({ article }: { article: StarterArticle }) {
           Simplify this to your level first
         </h2>
         <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
-          Three steps. You&rsquo;ll need a free{" "}
+          Three steps. You&rsquo;ll only need a free{" "}
           <a
             href="https://claude.ai/"
             target="_blank"
