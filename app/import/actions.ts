@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getStarterArticle } from "@/data/starter";
 import { db } from "@/lib/db";
 import { gradeText, type GradeResult } from "@/lib/grade";
 import { detectGrammarPoints, type GrammarMatch } from "@/lib/grammar";
@@ -32,10 +33,14 @@ export type CreateDeckInput = {
   text: string;
   selectedHanzi: string[];
   selectedGrammarPointIds: string[];
+  // If the user arrived from /starter/[slug] via the simplify loop, we keep
+  // the original (harder) version attached to the source so the deck detail
+  // page can offer 'Ready for the original?' once the learner has studied.
+  fromStarterSlug?: string | null;
 };
 
 export async function createDeck(input: CreateDeckInput): Promise<void> {
-  const { title, kind, text, selectedHanzi, selectedGrammarPointIds } = input;
+  const { title, kind, text, selectedHanzi, selectedGrammarPointIds, fromStarterSlug } = input;
   if (!title.trim() || !text.trim()) {
     throw new Error("title and text are required");
   }
@@ -47,10 +52,14 @@ export async function createDeck(input: CreateDeckInput): Promise<void> {
   const now = Math.floor(Date.now() / 1000);
   const cleanTitle = title.trim();
 
+  const originalText = fromStarterSlug
+    ? (getStarterArticle(fromStarterSlug)?.text ?? null)
+    : null;
+
   // Single shared source row — both decks reference the same original text.
   const sourceResult = await client.execute({
-    sql: "INSERT INTO sources (title, kind, text, created_at) VALUES (?, ?, ?, ?) RETURNING id",
-    args: [cleanTitle, kind, text, now],
+    sql: "INSERT INTO sources (title, kind, text, original_text, created_at) VALUES (?, ?, ?, ?, ?) RETURNING id",
+    args: [cleanTitle, kind, text, originalText, now],
   });
   const sourceId = Number(sourceResult.rows[0].id);
 

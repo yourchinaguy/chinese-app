@@ -49,6 +49,7 @@ export default async function ImportPage({
     text: firstParam(sp.text) ?? "",
     title: firstParam(sp.title) ?? "",
     kind: isKind(kindParam) ? kindParam : "article",
+    fromStarterSlug: firstParam(sp.from) ?? null,
   };
   return <Import defaultLevel={defaultLevel} prefill={prefill} />;
 }

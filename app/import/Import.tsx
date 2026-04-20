@@ -17,7 +17,12 @@ const verdictStyles: Record<Verdict, string> = {
   PROPER_NOUN: "bg-sky-100 text-sky-900 dark:bg-sky-900/40 dark:text-sky-200",
 };
 
-type Prefill = { text: string; title: string; kind: Kind };
+type Prefill = {
+  text: string;
+  title: string;
+  kind: Kind;
+  fromStarterSlug: string | null;
+};
 
 export function Import({
   defaultLevel,
@@ -30,6 +35,7 @@ export function Import({
   const [title, setTitle] = useState(prefill?.title ?? "");
   const [kind, setKind] = useState<Kind>(prefill?.kind ?? "article");
   const [level, setLevel] = useState<HskLevel>(defaultLevel);
+  const fromStarterSlug = prefill?.fromStarterSlug ?? null;
   const [result, setResult] = useState<AnalyzeResult | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [selectedGrammar, setSelectedGrammar] = useState<Set<string>>(new Set());
@@ -82,6 +88,7 @@ export function Import({
         text,
         selectedHanzi: Array.from(selected),
         selectedGrammarPointIds: Array.from(selectedGrammar),
+        fromStarterSlug,
       });
     });
   }
@@ -474,12 +481,16 @@ function PodcastHelp() {
 
 function OtherHelp() {
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       <div className="font-medium text-zinc-900 dark:text-zinc-100">Any other Chinese text</div>
       <p>
         Chat messages, textbook chapters, song lyrics, microblog posts, dialog
         from a lesson, handwritten notes (type them out) — anything goes. Just
         paste it below.
+      </p>
+      <p className="text-xs text-zinc-500">
+        <strong>Photos of Chinese?</strong> Drop them in <code className="rounded bg-zinc-200 px-1 dark:bg-zinc-800">inbox/&lt;name&gt;/</code> in the repo
+        and ask Claude Code to process them — see <code className="rounded bg-zinc-200 px-1 dark:bg-zinc-800">inbox/README.md</code> for the workflow.
       </p>
     </div>
   );

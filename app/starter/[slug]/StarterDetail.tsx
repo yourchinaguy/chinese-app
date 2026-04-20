@@ -81,6 +81,7 @@ export function StarterDetail({ article }: { article: StarterArticle }) {
         title: `${article.title}（HSK ${level} 改写）`,
         text: simplified,
         kind: "article",
+        from: article.slug,
       }).toString()
     : null;
 

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { submitReview } from "./actions";
+import { OriginalVersionSection } from "./OriginalVersionSection";
 import type { Deck } from "./page";
 
 export type GrammarCard = {
@@ -24,10 +25,16 @@ export function GrammarReview({
   deck,
   cards,
   total,
+  originalText,
+  readyForOriginal,
+  ageDays,
 }: {
   deck: Deck;
   cards: GrammarCard[];
   total: number;
+  originalText: string | null;
+  readyForOriginal: boolean;
+  ageDays: number;
 }) {
   const [sessionCards] = useState(cards);
   const [idx, setIdx] = useState(0);
@@ -67,6 +74,14 @@ export function GrammarReview({
             Session done — {sessionCards.length} grammar points reviewed.
           </p>
         </div>
+        {originalText && (
+          <OriginalVersionSection
+            title={deck.name}
+            originalText={originalText}
+            ageDays={ageDays}
+            ready={readyForOriginal}
+          />
+        )}
       </main>
     );
   }

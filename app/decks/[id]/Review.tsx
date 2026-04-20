@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { submitReview } from "./actions";
+import { OriginalVersionSection } from "./OriginalVersionSection";
 import type { Card } from "./page";
 
 const INLINE_LIMIT = 3;
@@ -11,10 +12,16 @@ export function Review({
   deck,
   cards,
   total,
+  originalText,
+  readyForOriginal,
+  ageDays,
 }: {
   deck: { id: number; name: string };
   cards: Card[];
   total: number;
+  originalText: string | null;
+  readyForOriginal: boolean;
+  ageDays: number;
 }) {
   // Freeze the deck on mount. Server-action revalidation re-renders this
   // component with a shorter cards array (the just-graded card is no longer
@@ -60,6 +67,14 @@ export function Review({
             (1 → 2 → 4 → 8 → 16 days). Misses come back tomorrow.
           </p>
         </div>
+        {originalText && (
+          <OriginalVersionSection
+            title={deck.name}
+            originalText={originalText}
+            ageDays={ageDays}
+            ready={readyForOriginal}
+          />
+        )}
       </main>
     );
   }
@@ -90,6 +105,13 @@ export function Review({
       </div>
 
       <div className="mt-4 text-xs text-zinc-500">{deck.name} · {total} cards total</div>
+
+      {originalText && readyForOriginal && (
+        <div className="mt-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-100">
+          Ready for the original? Finish this session and we&rsquo;ll surface it
+          at the end.
+        </div>
+      )}
 
       <div className="mt-8 flex flex-1 flex-col items-center justify-center">
         <div className="text-center">

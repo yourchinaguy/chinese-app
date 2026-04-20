@@ -79,6 +79,7 @@ const alters = [
   `ALTER TABLE decks ADD COLUMN deck_type TEXT NOT NULL DEFAULT 'vocab'`,
   `ALTER TABLE cards ADD COLUMN grammar_point_id TEXT`,
   `ALTER TABLE cards ADD COLUMN matched_text TEXT`,
+  `ALTER TABLE sources ADD COLUMN original_text TEXT`,
 ];
 
 for (const sql of alters) {

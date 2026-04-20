@@ -4,9 +4,12 @@ import { db } from "@/lib/db";
 import { grammarPointById, wikiUrlFor } from "@/data/grammar-points";
 import { cleanTranslations, getHskEntry } from "@/lib/hsk";
 import { GrammarReview, type GrammarCard } from "./GrammarReview";
+import { OriginalVersionSection } from "./OriginalVersionSection";
 import { Review } from "./Review";
 
 export const dynamic = "force-dynamic";
+
+const ORIGINAL_PROMPT_AFTER_DAYS = 14;
 
 export type Deck = {
   id: number;
@@ -29,7 +32,11 @@ export type Card = {
 async function loadDeck(id: number) {
   const client = db();
   const deckRes = await client.execute({
-    sql: "SELECT id, name, deck_type FROM decks WHERE id = ?",
+    sql: `SELECT d.id, d.name, d.deck_type, d.created_at,
+                 s.original_text
+          FROM decks d
+          LEFT JOIN sources s ON s.id = d.source_id
+          WHERE d.id = ?`,
     args: [id],
   });
   if (deckRes.rows.length === 0) return null;
@@ -42,6 +49,14 @@ async function loadDeck(id: number) {
     name: String(deckRes.rows[0].name),
     deckType,
   };
+  const createdAt = Number(deckRes.rows[0].created_at);
+  const originalText =
+    deckRes.rows[0].original_text === null
+      ? null
+      : String(deckRes.rows[0].original_text);
+  const ageDays = Math.floor(
+    (Math.floor(Date.now() / 1000) - createdAt) / 86400,
+  );
 
   const now = Math.floor(Date.now() / 1000);
   const dueRes = await client.execute({
@@ -78,7 +93,14 @@ async function loadDeck(id: number) {
         due_at: Number(row.due_at),
       });
     }
-    return { deck, due, total: Number(totalRes.rows[0].c), kind: "grammar" as const };
+    return {
+      deck,
+      due,
+      total: Number(totalRes.rows[0].c),
+      kind: "grammar" as const,
+      originalText,
+      ageDays,
+    };
   }
 
   const due: Card[] = dueRes.rows.map((row) => {
@@ -97,7 +119,14 @@ async function loadDeck(id: number) {
       due_at: Number(row.due_at),
     };
   });
-  return { deck, due, total: Number(totalRes.rows[0].c), kind: "vocab" as const };
+  return {
+    deck,
+    due,
+    total: Number(totalRes.rows[0].c),
+    kind: "vocab" as const,
+    originalText,
+    ageDays,
+  };
 }
 
 export default async function DeckPage({
@@ -109,7 +138,8 @@ export default async function DeckPage({
   const data = await loadDeck(Number(id));
   if (!data) notFound();
 
-  const { deck, due, total } = data;
+  const { deck, due, total, originalText, ageDays } = data;
+  const ready = ageDays >= ORIGINAL_PROMPT_AFTER_DAYS;
 
   if (due.length === 0) {
     return (
@@ -129,12 +159,38 @@ export default async function DeckPage({
             {total} cards in this deck. Come back later when more are due.
           </p>
         </div>
+        {originalText && (
+          <OriginalVersionSection
+            title={deck.name}
+            originalText={originalText}
+            ageDays={ageDays}
+            ready={ready}
+          />
+        )}
       </main>
     );
   }
 
   if (data.kind === "grammar") {
-    return <GrammarReview deck={deck} cards={data.due} total={total} />;
+    return (
+      <GrammarReview
+        deck={deck}
+        cards={data.due}
+        total={total}
+        originalText={originalText}
+        readyForOriginal={ready}
+        ageDays={ageDays}
+      />
+    );
   }
-  return <Review deck={deck} cards={data.due} total={total} />;
+  return (
+    <Review
+      deck={deck}
+      cards={data.due}
+      total={total}
+      originalText={originalText}
+      readyForOriginal={ready}
+      ageDays={ageDays}
+    />
+  );
 }

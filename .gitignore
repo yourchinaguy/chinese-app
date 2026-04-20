@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Personal-study photos dropped for OCR processing.
+# Keep README and .gitkeep tracked; ignore everything inside subfolders.
+/inbox/*/
