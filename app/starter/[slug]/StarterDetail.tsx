@@ -123,7 +123,16 @@ export function StarterDetail({ article }: { article: StarterArticle }) {
           Simplify this to your level first
         </h2>
         <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
-          Three steps. Your Max Plan covers the claude.ai side; no API spend.
+          Three steps. You&rsquo;ll need a free{" "}
+          <a
+            href="https://claude.ai/"
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            claude.ai
+          </a>{" "}
+          account — no paid plan needed for prompts this small.
         </p>
 
         <ol className="mt-4 space-y-4 text-sm">
