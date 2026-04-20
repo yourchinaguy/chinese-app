@@ -259,18 +259,27 @@ function CadencePlan({ inferredLevel }: { inferredLevel: HskLevel }) {
 function WordGrid({ answers }: { answers: Answer[] }) {
   const sorted = [...answers].sort((a, b) => a.entry.level - b.entry.level);
   return (
-    <ul className="mt-3 grid grid-cols-1 gap-1 sm:grid-cols-2">
+    <ul className="mt-3 grid grid-cols-1 gap-x-6 gap-y-3 md:grid-cols-2">
       {sorted.map((a) => {
         const entry = getHskEntry(a.entry.hanzi);
         const glosses = cleanTranslations(entry);
+        const meaning = glosses.slice(0, 2).join(" · ") || a.entry.translations[0];
         return (
-          <li key={a.entry.hanzi} className="flex items-baseline gap-2 text-sm">
-            <span className="text-base">{a.entry.hanzi}</span>
-            <span className="text-xs text-zinc-500">{a.entry.pinyin}</span>
-            <span className="ml-auto text-xs text-zinc-400">HSK {a.entry.level}</span>
-            <span className="basis-full pl-6 text-xs text-zinc-600 dark:text-zinc-400">
-              {glosses.slice(0, 2).join(" · ") || a.entry.translations[0]}
+          <li key={a.entry.hanzi} className="flex gap-3">
+            <span className="shrink-0 whitespace-nowrap text-lg leading-tight">
+              {a.entry.hanzi}
             </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-baseline gap-2 text-xs text-zinc-500">
+                <span className="whitespace-nowrap">{a.entry.pinyin}</span>
+                <span className="ml-auto whitespace-nowrap text-zinc-400">
+                  HSK {a.entry.level}
+                </span>
+              </div>
+              <div className="text-sm text-zinc-700 dark:text-zinc-300">
+                {meaning}
+              </div>
+            </div>
           </li>
         );
       })}
