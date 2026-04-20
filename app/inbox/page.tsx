@@ -89,20 +89,24 @@ export default function InboxGuidePage() {
       </ol>
 
       <section className="mt-10 rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="font-medium">Honest limitations</div>
+        <div className="font-medium">Good to know</div>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-zinc-700 dark:text-zinc-300">
           <li>
-            Requires <strong>Claude Code</strong> installed locally. You
-            already have it; a friend using your deployed app wouldn&rsquo;t.
+            You&rsquo;ll need <strong>Claude Code</strong> (or a similar
+            local agent that can read images and run shell commands) set up
+            on your machine. The repo will go open-source once the app is
+            validated, so anyone with a local AI agent can fork and run
+            this flow.
           </li>
           <li>
-            Auto-import uses default selections (all target words, all proper
-            nouns, all detected grammar). If you want to curate, run{" "}
-            <Code>npm run import-text</Code> yourself or use{" "}
+            Auto-import uses sensible defaults (all target words, proper
+            nouns, and detected grammar). If you want to curate picks
+            yourself, run <Code>npm run import-text</Code> manually on an
+            existing <Code>extracted.md</Code>, or open{" "}
             <Link href="/import" className="underline">
               /import
-            </Link>
-            .
+            </Link>{" "}
+            and paste the text — both routes end up at the same place.
           </li>
           <li>
             Handwriting is hit-or-miss. Printed text works great.
