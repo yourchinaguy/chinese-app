@@ -265,21 +265,19 @@ function WordGrid({ answers }: { answers: Answer[] }) {
         const glosses = cleanTranslations(entry);
         const meaning = glosses.slice(0, 2).join(" · ") || a.entry.translations[0];
         return (
-          <li key={a.entry.hanzi} className="flex gap-3">
+          <li key={a.entry.hanzi} className="flex items-baseline gap-3 text-sm">
             <span className="shrink-0 whitespace-nowrap text-lg leading-tight">
               {a.entry.hanzi}
             </span>
             <div className="min-w-0 flex-1">
-              <div className="flex items-baseline gap-2 text-xs text-zinc-500">
-                <span className="whitespace-nowrap">{a.entry.pinyin}</span>
-                <span className="ml-auto whitespace-nowrap text-zinc-400">
-                  HSK {a.entry.level}
-                </span>
-              </div>
-              <div className="text-sm text-zinc-700 dark:text-zinc-300">
-                {meaning}
-              </div>
+              <span className="mr-2 whitespace-nowrap text-xs text-zinc-500">
+                {a.entry.pinyin}
+              </span>
+              <span className="text-zinc-700 dark:text-zinc-300">{meaning}</span>
             </div>
+            <span className="shrink-0 whitespace-nowrap text-xs text-zinc-400">
+              HSK {a.entry.level}
+            </span>
           </li>
         );
       })}
