@@ -32,6 +32,7 @@ export function Import({
   const [level, setLevel] = useState<HskLevel>(defaultLevel);
   const [result, setResult] = useState<AnalyzeResult | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selectedGrammar, setSelectedGrammar] = useState<Set<string>>(new Set());
   const [analyzing, startAnalyzing] = useTransition();
   const [creating, startCreating] = useTransition();
 
@@ -49,6 +50,8 @@ export function Import({
           defaults.add(g.hanzi);
       }
       setSelected(defaults);
+      // Default-select all detected grammar points.
+      setSelectedGrammar(new Set(r.grammar.map((m) => m.pointId)));
     });
   }
 
@@ -61,6 +64,15 @@ export function Import({
     });
   }
 
+  function toggleGrammar(pointId: string) {
+    setSelectedGrammar((prev) => {
+      const next = new Set(prev);
+      if (next.has(pointId)) next.delete(pointId);
+      else next.add(pointId);
+      return next;
+    });
+  }
+
   function create() {
     if (!result) return;
     startCreating(async () => {
@@ -69,6 +81,7 @@ export function Import({
         kind,
         text,
         selectedHanzi: Array.from(selected),
+        selectedGrammarPointIds: Array.from(selectedGrammar),
       });
     });
   }
@@ -155,6 +168,8 @@ export function Import({
           result={result}
           selected={selected}
           toggle={toggle}
+          selectedGrammar={selectedGrammar}
+          toggleGrammar={toggleGrammar}
           create={create}
           creating={creating}
         />
@@ -167,12 +182,16 @@ function Analysis({
   result,
   selected,
   toggle,
+  selectedGrammar,
+  toggleGrammar,
   create,
   creating,
 }: {
   result: AnalyzeResult;
   selected: Set<string>;
   toggle: (hanzi: string) => void;
+  selectedGrammar: Set<string>;
+  toggleGrammar: (pointId: string) => void;
   create: () => void;
   creating: boolean;
 }) {
@@ -240,25 +259,47 @@ function Analysis({
       )}
 
       {result.grammar.length > 0 && (
-        <GrammarSection matches={result.grammar} />
+        <GrammarSection
+          matches={result.grammar}
+          selected={selectedGrammar}
+          toggle={toggleGrammar}
+        />
       )}
 
       <section className="sticky bottom-0 -mx-6 border-t border-zinc-200 bg-white/95 px-6 py-4 backdrop-blur dark:border-zinc-800 dark:bg-black/95">
         <div className="flex items-center justify-between gap-4">
           <span className="text-sm text-zinc-600 dark:text-zinc-400">
-            {selected.size} word{selected.size === 1 ? "" : "s"} selected
+            {describeSelection(selected.size, selectedGrammar.size)}
           </span>
           <button
             onClick={create}
-            disabled={creating || selected.size === 0}
+            disabled={creating || (selected.size === 0 && selectedGrammar.size === 0)}
             className="rounded-md bg-emerald-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:opacity-50"
           >
-            {creating ? "Creating deck…" : "Create deck"}
+            {creating
+              ? "Creating…"
+              : deckActionLabel(selected.size, selectedGrammar.size)}
           </button>
         </div>
       </section>
     </div>
   );
+}
+
+function describeSelection(words: number, grammar: number): string {
+  if (words === 0 && grammar === 0) return "nothing selected";
+  const parts: string[] = [];
+  if (words > 0) parts.push(`${words} word${words === 1 ? "" : "s"}`);
+  if (grammar > 0)
+    parts.push(`${grammar} grammar point${grammar === 1 ? "" : "s"}`);
+  return parts.join(" + ") + " selected";
+}
+
+function deckActionLabel(words: number, grammar: number): string {
+  if (words > 0 && grammar > 0) return "Create both decks →";
+  if (words > 0) return "Create vocab deck →";
+  if (grammar > 0) return "Create grammar deck →";
+  return "Create deck →";
 }
 
 function WordPicker({
@@ -444,59 +485,88 @@ function OtherHelp() {
   );
 }
 
-function GrammarSection({ matches }: { matches: GrammarMatch[] }) {
+function GrammarSection({
+  matches,
+  selected,
+  toggle,
+}: {
+  matches: GrammarMatch[];
+  selected: Set<string>;
+  toggle: (pointId: string) => void;
+}) {
   const sorted = [...matches].sort((a, b) => a.approxHsk - b.approxHsk);
   return (
     <section>
-      <h2 className="text-lg font-medium">Grammar points in this text ({matches.length})</h2>
+      <h2 className="text-lg font-medium">
+        Grammar points — check to add ({matches.length})
+      </h2>
       <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-        Structures worth studying alongside the vocabulary. Each link opens the
-        canonical explanation on Chinese Grammar Wiki.
+        Default selected. Checked points become a separate &ldquo;grammar&rdquo;
+        deck you can review alongside vocab. Each link opens the canonical
+        explanation on Chinese Grammar Wiki.
       </p>
       <ul className="mt-4 space-y-3">
-        {sorted.map((m) => (
-          <li
-            key={m.pointId}
-            className="rounded-lg border border-violet-200 bg-violet-50 p-4 dark:border-violet-900 dark:bg-violet-900/10"
-          >
-            <div className="flex items-baseline justify-between gap-2">
-              <div>
-                <div className="font-medium">{m.name}</div>
-                <div className="text-sm text-violet-900 dark:text-violet-200">
-                  {m.patternZh}
+        {sorted.map((m) => {
+          const isOn = selected.has(m.pointId);
+          return (
+            <li
+              key={m.pointId}
+              className={`rounded-lg border p-4 transition ${
+                isOn
+                  ? "border-violet-400 bg-violet-50 dark:border-violet-600 dark:bg-violet-900/20"
+                  : "border-zinc-200 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-900/30"
+              }`}
+            >
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={isOn}
+                  onChange={() => toggle(m.pointId)}
+                  className="mt-1.5"
+                />
+                <div className="flex-1">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <div>
+                      <div className="font-medium">{m.name}</div>
+                      <div className="text-sm text-violet-900 dark:text-violet-200">
+                        {m.patternZh}
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-baseline gap-2 text-xs text-zinc-500">
+                      <span className="rounded-full bg-white px-2 py-0.5 dark:bg-zinc-900">
+                        {m.cefr}
+                      </span>
+                      <span className="rounded-full bg-white px-2 py-0.5 dark:bg-zinc-900">
+                        ~HSK {m.approxHsk}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-300">
+                    {m.description}
+                  </p>
+                  <blockquote className="mt-3 rounded-md border-l-2 border-violet-400 bg-white px-3 py-2 text-base leading-relaxed text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
+                    <GrammarHighlight
+                      sentence={m.sentence}
+                      matchedText={m.matchedText}
+                      matchStart={m.matchStart}
+                    />
+                  </blockquote>
+                  <div className="mt-3">
+                    <a
+                      href={m.wikiUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-sm text-violet-700 underline hover:text-violet-900 dark:text-violet-300 dark:hover:text-violet-100"
+                    >
+                      Read more on Chinese Grammar Wiki →
+                    </a>
+                  </div>
                 </div>
-              </div>
-              <div className="flex shrink-0 items-baseline gap-2 text-xs text-zinc-500">
-                <span className="rounded-full bg-white px-2 py-0.5 dark:bg-zinc-900">
-                  {m.cefr}
-                </span>
-                <span className="rounded-full bg-white px-2 py-0.5 dark:bg-zinc-900">
-                  ~HSK {m.approxHsk}
-                </span>
-              </div>
-            </div>
-            <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-300">
-              {m.description}
-            </p>
-            <blockquote className="mt-3 rounded-md border-l-2 border-violet-400 bg-white px-3 py-2 text-base leading-relaxed text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
-              <GrammarHighlight
-                sentence={m.sentence}
-                matchedText={m.matchedText}
-                matchStart={m.matchStart}
-              />
-            </blockquote>
-            <div className="mt-3">
-              <a
-                href={m.wikiUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm text-violet-700 underline hover:text-violet-900 dark:text-violet-300 dark:hover:text-violet-100"
-              >
-                Read more on Chinese Grammar Wiki →
-              </a>
-            </div>
-          </li>
-        ))}
+              </label>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

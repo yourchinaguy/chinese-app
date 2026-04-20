@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 type DeckRow = {
   id: number;
   name: string;
+  deckType: "vocab" | "grammar";
   created_at: number;
   total: number;
   due: number;
@@ -14,7 +15,7 @@ type DeckRow = {
 async function listDecks(): Promise<DeckRow[]> {
   const now = Math.floor(Date.now() / 1000);
   const r = await db().execute({
-    sql: `SELECT d.id, d.name, d.created_at,
+    sql: `SELECT d.id, d.name, d.deck_type, d.created_at,
                  COUNT(c.id) as total,
                  SUM(CASE WHEN c.due_at <= ? THEN 1 ELSE 0 END) as due
           FROM decks d
@@ -26,6 +27,9 @@ async function listDecks(): Promise<DeckRow[]> {
   return r.rows.map((row) => ({
     id: Number(row.id),
     name: String(row.name),
+    deckType: (String(row.deck_type ?? "vocab") === "grammar"
+      ? "grammar"
+      : "vocab") as "vocab" | "grammar",
     created_at: Number(row.created_at),
     total: Number(row.total),
     due: Number(row.due ?? 0),
@@ -76,14 +80,25 @@ export default async function DecksPage() {
                 href={`/decks/${d.id}`}
                 className="flex items-center justify-between rounded-lg border border-zinc-200 px-5 py-4 transition hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
               >
-                <div>
-                  <div className="font-medium">{d.name}</div>
-                  <div className="text-sm text-zinc-500">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate font-medium">{d.name}</span>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+                        d.deckType === "grammar"
+                          ? "bg-violet-100 text-violet-900 dark:bg-violet-900/40 dark:text-violet-200"
+                          : "bg-emerald-100 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-200"
+                      }`}
+                    >
+                      {d.deckType}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 text-sm text-zinc-500">
                     {d.total} cards · {d.due} due
                   </div>
                 </div>
                 {d.due > 0 && (
-                  <span className="rounded-full bg-amber-200 px-3 py-0.5 text-xs font-medium text-amber-950 dark:bg-amber-500/30 dark:text-amber-100">
+                  <span className="ml-3 shrink-0 rounded-full bg-amber-200 px-3 py-0.5 text-xs font-medium text-amber-950 dark:bg-amber-500/30 dark:text-amber-100">
                     {d.due} due
                   </span>
                 )}

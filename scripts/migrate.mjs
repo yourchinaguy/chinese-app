@@ -73,4 +73,27 @@ for (const sql of statements) {
   process.stdout.write("ok\n");
 }
 
+// Post-schema migrations. Each ALTER runs once; on subsequent migrate runs
+// the 'duplicate column' error is ignored.
+const alters = [
+  `ALTER TABLE decks ADD COLUMN deck_type TEXT NOT NULL DEFAULT 'vocab'`,
+  `ALTER TABLE cards ADD COLUMN grammar_point_id TEXT`,
+  `ALTER TABLE cards ADD COLUMN matched_text TEXT`,
+];
+
+for (const sql of alters) {
+  const firstLine = sql.trim().split("\n")[0];
+  process.stdout.write(`→ ${firstLine} ... `);
+  try {
+    await db.execute(sql);
+    process.stdout.write("ok\n");
+  } catch (e) {
+    if (String(e?.message ?? e).includes("duplicate column")) {
+      process.stdout.write("already present\n");
+    } else {
+      throw e;
+    }
+  }
+}
+
 console.log("\nMigrations complete.");
