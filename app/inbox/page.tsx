@@ -18,8 +18,9 @@ export default function InboxGuidePage() {
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
         The app doesn&rsquo;t yet have a built-in camera. Instead, drop photos
         into your local repo and Claude Code reads them multimodally, extracts
-        the Chinese, and hands back clean text you paste into Import. Zero API
-        cost — your Claude Code session handles the OCR directly.
+        the Chinese, <strong>and auto-imports them as decks</strong>. Zero API
+        cost — Claude Code&rsquo;s vision handles the OCR and a local script
+        writes the decks directly to your database.
       </p>
 
       <ol className="mt-8 space-y-6">
@@ -30,10 +31,8 @@ export default function InboxGuidePage() {
             <>
               In the repo, create{" "}
               <Code>inbox/&lt;name&gt;/</Code> — one folder per article,
-              magazine page, or sign you want to study. Name it something
-              memorable, e.g.{" "}
-              <Code>inbox/36kr-dji-interview/</Code> or{" "}
-              <Code>inbox/beijing-subway-sign/</Code>.
+              magazine page, or sign. Name it something memorable, e.g.{" "}
+              <Code>inbox/36kr-dji-interview/</Code>.
             </>
           }
         />
@@ -43,13 +42,12 @@ export default function InboxGuidePage() {
           title="Drop the photos inside"
           body={
             <>
-              Phone shots, screenshots, scans — all fine. If an article spans
-              multiple pages, name them so they sort in reading order:{" "}
+              Phone shots, screenshots, scans — all fine. For multi-page
+              articles, name them so they sort in reading order:{" "}
               <Code>page-01.jpg</Code>, <Code>page-02.jpg</Code>, …
               <div className="mt-2 text-xs text-zinc-500">
-                Only photos you have the right to study from. Everything under{" "}
-                <Code>inbox/&lt;name&gt;/</Code> is gitignored by default — your
-                photos never leave your laptop.
+                Everything under <Code>inbox/&lt;name&gt;/</Code> is
+                gitignored — your photos never leave your laptop.
               </div>
             </>
           }
@@ -57,33 +55,34 @@ export default function InboxGuidePage() {
 
         <Step
           n={3}
-          title="Ask Claude Code to process them"
+          title="Ask Claude Code to process"
           body={
             <>
-              Open the repo in Claude Code and say something like:
+              Open the repo in Claude Code and say:
               <Prompt>Process inbox/36kr-dji-interview</Prompt>
               Claude Code reads each image in filename order, extracts the
-              Chinese, and writes the concatenated text to{" "}
-              <Code>inbox/&lt;name&gt;/extracted.md</Code>. Anything unreadable
-              is flagged so you can re-shoot.
+              Chinese into <Code>extracted.md</Code>, and runs{" "}
+              <Code>npm run import-text</Code> automatically — creating vocab
+              and grammar decks. You don&rsquo;t paste anything.
             </>
           }
         />
 
         <Step
           n={4}
-          title="Import into the app"
+          title="Open /decks and review"
           body={
             <>
-              Open <Code>extracted.md</Code>, copy the Chinese, head to{" "}
-              <Link href="/import" className="underline">
-                /import
+              The new deck is waiting in{" "}
+              <Link href="/decks" className="underline">
+                /decks
               </Link>
-              , paste. Optionally use the{" "}
+              . If a piece turned out above your level, you can always route
+              it through the{" "}
               <Link href="/starter" className="underline">
-                simplify loop on /starter
+                simplify loop
               </Link>{" "}
-              first if it&rsquo;s above your level.
+              afterwards.
             </>
           }
         />
@@ -93,13 +92,17 @@ export default function InboxGuidePage() {
         <div className="font-medium">Honest limitations</div>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-zinc-700 dark:text-zinc-300">
           <li>
-            Requires <strong>Claude Code</strong> installed locally (you already
-            have it; a friend sharing your app later would too).
+            Requires <strong>Claude Code</strong> installed locally. You
+            already have it; a friend using your deployed app wouldn&rsquo;t.
           </li>
           <li>
-            It&rsquo;s manual — you ask, Claude Code processes. V2 will have
-            proper in-app upload + OCR via an API, so anyone can use it without
-            running Claude Code.
+            Auto-import uses default selections (all target words, all proper
+            nouns, all detected grammar). If you want to curate, run{" "}
+            <Code>npm run import-text</Code> yourself or use{" "}
+            <Link href="/import" className="underline">
+              /import
+            </Link>
+            .
           </li>
           <li>
             Handwriting is hit-or-miss. Printed text works great.
