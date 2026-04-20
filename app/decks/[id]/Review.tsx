@@ -64,7 +64,8 @@ export function Review({
           <p className="text-lg">Session done — {sessionCards.length} reviewed.</p>
           <p className="mt-1 text-sm text-zinc-500">
             Words you got right won&rsquo;t show again until their interval ends
-            (1 → 2 → 4 → 8 → 16 days). Misses come back tomorrow.
+            (1 → 2 → 4 → 8 → 16 days). Anything you marked to keep studying
+            comes back tomorrow.
           </p>
         </div>
         {originalText && (
@@ -158,7 +159,7 @@ export function Review({
             disabled={pending}
             className="rounded-lg border border-rose-300 bg-rose-50 px-5 py-5 text-lg font-medium text-rose-900 disabled:opacity-50 dark:border-rose-900 dark:bg-rose-900/20 dark:text-rose-200"
           >
-            Missed
+            Study
           </button>
           <button
             onClick={() => grade(true)}
