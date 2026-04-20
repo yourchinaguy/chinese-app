@@ -18,6 +18,12 @@ export type GrammarPoint = {
   approxHsk: 1 | 2 | 3 | 4 | 5 | 6;
   description: string;
   patterns: RegExp[]; // one or more detection regexes (variants)
+  // Tokens that belong exclusively to this structure as connectives. When
+  // the point is detected in a text, these tokens are filtered out of the
+  // vocabulary word pickers (they're already covered by the grammar card).
+  // Only include truly distinctive connectives — skip overly common ones
+  // like 一/就/才/都/也 whose other uses would get wrongly suppressed.
+  connectives: string[];
   wikiQuery: string;  // search string passed to the wiki
 };
 
@@ -35,6 +41,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     description:
       "Expresses that as one thing increases, another increases in proportion. Second 越 attaches to an adjective or change verb.",
     patterns: [/越(?!来越)[^。！？\n]{1,30}?越/u],
+    connectives: ["越"],
     wikiQuery: "越 越",
   },
   {
@@ -45,6 +52,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 3,
     description: "'Getting more and more [adj/verb]' — gradual intensification.",
     patterns: [/越来越/u],
+    connectives: ["越来越"],
     wikiQuery: "越来越",
   },
   {
@@ -55,6 +63,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 3,
     description: "Immediate sequence: the moment A happens, B happens.",
     patterns: [/一[^。！？\n]{1,25}?就/u],
+    connectives: [],
     wikiQuery: "一 就 as soon as",
   },
   {
@@ -66,6 +75,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     description:
       "Adds a second, usually stronger claim. Both clauses share the same subject.",
     patterns: [/不但[^。！？\n]{1,80}?而且/u],
+    connectives: ["不但", "而且"],
     wikiQuery: "不但 而且",
   },
   {
@@ -76,6 +86,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 5,
     description: "More formal / written variant of 不但…而且…",
     patterns: [/不仅(?!仅)[^。！？\n]{1,80}?(而且|还|也)/u],
+    connectives: ["不仅", "而且"],
     wikiQuery: "不仅 而且",
   },
   {
@@ -87,6 +98,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     description:
       "Emphatic variant of 不仅…而且… — 'not merely X; rather Y'. Common in editorial/analytical writing.",
     patterns: [/不仅仅[^。！？\n]{1,80}?(而|而是|而且)/u],
+    connectives: ["不仅仅", "而是", "而"],
     wikiQuery: "不仅仅 而",
   },
   {
@@ -97,6 +109,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 3,
     description: "Concessive: sets up an expectation, then reverses it.",
     patterns: [/虽然[^。！？\n]{1,80}?(但是|可是|不过|然而|却)/u],
+    connectives: ["虽然", "但是", "可是", "不过", "然而"],
     wikiQuery: "虽然 但是",
   },
   {
@@ -107,6 +120,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 5,
     description: "Stronger concessive than 虽然 — 'despite X, still Y'.",
     patterns: [/尽管[^。！？\n]{1,80}?(但是|可是|仍然|仍|还是|依然)/u],
+    connectives: ["尽管", "仍然", "依然"],
     wikiQuery: "尽管 但是",
   },
   {
@@ -117,6 +131,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 3,
     description: "Explicit cause-and-effect connector pair.",
     patterns: [/因为[^。！？\n]{1,80}?所以/u],
+    connectives: ["因为", "所以"],
     wikiQuery: "因为 所以",
   },
   {
@@ -127,6 +142,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 5,
     description: "Formal cause-and-effect, common in news and essays.",
     patterns: [/由于[^。！？\n]{1,80}?(因此|所以|从而)/u],
+    connectives: ["由于", "因此", "从而"],
     wikiQuery: "由于 因此",
   },
   {
@@ -137,6 +153,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 4,
     description: "Sufficient condition: if the first part holds, the second follows.",
     patterns: [/只要[^。！？\n]{1,60}?就/u],
+    connectives: ["只要"],
     wikiQuery: "只要 就",
   },
   {
@@ -147,6 +164,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 4,
     description: "Necessary condition: without the first part, the second can't happen.",
     patterns: [/只有[^。！？\n]{1,60}?才/u],
+    connectives: ["只有"],
     wikiQuery: "只有 才",
   },
   {
@@ -157,6 +175,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 6,
     description: "Unless the condition holds, the alternative (usually undesirable) happens.",
     patterns: [/除非[^。！？\n]{1,80}?(否则|不然)/u],
+    connectives: ["除非", "否则", "不然"],
     wikiQuery: "除非 否则",
   },
   {
@@ -167,6 +186,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 4,
     description: "Asserts something holds regardless of the variable in the first clause.",
     patterns: [/(无论|不管)[^。！？\n]{1,60}?(都|也)/u],
+    connectives: ["无论", "不管"],
     wikiQuery: "无论 都",
   },
   {
@@ -177,6 +197,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 4,
     description: "Joins two qualities or actions — parallel, balanced.",
     patterns: [/既[^。！？\n]{1,40}?(又|也)/u],
+    connectives: ["既"],
     wikiQuery: "既 又",
   },
   {
@@ -187,6 +208,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 3,
     description: "Colloquial parallel — often for co-occurring qualities/actions.",
     patterns: [/又[^。！？\n]{1,20}?又/u],
+    connectives: [],
     wikiQuery: "又 又",
   },
   {
@@ -197,6 +219,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 5,
     description: "Presents two alternatives between which a choice must be made.",
     patterns: [/要么[^。！？\n]{1,60}?要么/u],
+    connectives: ["要么"],
     wikiQuery: "要么 要么",
   },
   {
@@ -207,6 +230,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 6,
     description: "Expresses a strong preference even at a cost.",
     patterns: [/(宁可|宁愿)[^。！？\n]{1,60}?也/u],
+    connectives: ["宁可", "宁愿"],
     wikiQuery: "宁可 也",
   },
   {
@@ -217,6 +241,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 6,
     description: "Compares two options and recommends the second.",
     patterns: [/与其[^。！？\n]{1,60}?不如/u],
+    connectives: ["与其", "不如"],
     wikiQuery: "与其 不如",
   },
   {
@@ -227,6 +252,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 4,
     description: "Given a known fact, draws a conclusion or recommendation.",
     patterns: [/既然[^。！？\n]{1,60}?就/u],
+    connectives: ["既然"],
     wikiQuery: "既然 就",
   },
   {
@@ -237,6 +263,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 3,
     description: "Two actions happening at the same time by the same subject.",
     patterns: [/一边[^。！？\n]{1,40}?一边/u],
+    connectives: ["一边"],
     wikiQuery: "一边 一边",
   },
   {
@@ -247,6 +274,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 3,
     description: "Imminent action or state — about to happen.",
     patterns: [/(快要|就要|快|要)[^。！？\n]{1,20}?了(?=[。！？\n])/u],
+    connectives: ["快要", "就要"],
     wikiQuery: "快要 了",
   },
   {
@@ -257,6 +285,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     approxHsk: 2,
     description: "Marks an action as already completed or a state as already reached.",
     patterns: [/已经[^。！？\n]{1,40}?了(?=[。！？\n])/u],
+    connectives: ["已经"],
     wikiQuery: "已经 了",
   },
 ];

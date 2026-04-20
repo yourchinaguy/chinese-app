@@ -20,8 +20,11 @@ export async function analyzeText(
   targetLevel: HskLevel,
 ): Promise<AnalyzeResult> {
   const knownSet = await loadKnownSet();
-  const grade = gradeText(text, { knownSet, targetLevel });
+  // Detect grammar first so we know which tokens are just connectives of a
+  // surfaced structure and shouldn't double-appear as vocabulary.
   const grammar = detectGrammarPoints(text);
+  const skipTokens = new Set(grammar.flatMap((m) => m.connectives));
+  const grade = gradeText(text, { knownSet, targetLevel, skipTokens });
   return { ...grade, grammar };
 }
 

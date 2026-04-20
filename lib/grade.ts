@@ -23,6 +23,9 @@ export type GradedWord = {
 export type GradeOptions = {
   knownSet: Set<string>;
   targetLevel: HskLevel;
+  // Tokens to skip entirely (already represented elsewhere — e.g. grammar
+  // connectives from detected grammar points).
+  skipTokens?: Set<string>;
 };
 
 // 的/了/着/过/地/得 — suffixes that bleed across word boundaries and produce
@@ -75,6 +78,7 @@ export function gradeText(text: string, opts: GradeOptions): GradeResult {
   const graded: GradedWord[] = [];
   for (const token of tokens) {
     if (isGrammarLeakage(token.word)) continue;
+    if (opts.skipTokens?.has(token.word)) continue;
     const { verdict, properGloss } = classify(token.word, opts, properNouns);
     const entry = getHskEntry(token.word);
     graded.push({

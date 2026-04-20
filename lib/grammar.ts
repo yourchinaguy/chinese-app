@@ -18,6 +18,7 @@ export type GrammarMatch = {
   matchedText: string;
   matchStart: number;
   matchEnd: number;
+  connectives: string[];
 };
 
 export function detectGrammarPoints(text: string): GrammarMatch[] {
@@ -43,6 +44,7 @@ export function detectGrammarPoints(text: string): GrammarMatch[] {
             matchedText: result[0],
             matchStart: result.index,
             matchEnd: result.index + result[0].length,
+            connectives: point.connectives,
           });
           seen.add(point.id);
           break;
