@@ -143,6 +143,7 @@ Please rewrite the Chinese text below so that:
 - Keep the overall meaning, flow, and tone. Don't dumb it down into kid-speak — still feel like real adult Chinese.
 - Prefer shorter sentences and simpler grammatical structures where possible.
 - Keep it roughly the same length as the original.
+- The first time a Chinese proper noun appears (person, place, company, product), follow it with its standard English equivalent or pinyin in parentheses — e.g. 汪滔 (Frank Wang), 深圳 (Shenzhen), 大疆 (DJI), 小红书 (Xiaohongshu / RedNote). Subsequent mentions can stay in Chinese only.
 
 Return ONLY the rewritten Chinese text. No English, no explanation, no markdown. Just the Chinese paragraphs.
 
