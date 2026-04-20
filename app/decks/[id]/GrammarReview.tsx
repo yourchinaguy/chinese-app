@@ -160,7 +160,7 @@ export function GrammarReview({
             disabled={pending}
             className="rounded-lg border border-rose-300 bg-rose-50 px-5 py-5 text-lg font-medium text-rose-900 disabled:opacity-50 dark:border-rose-900 dark:bg-rose-900/20 dark:text-rose-200"
           >
-            Missed
+            Study
           </button>
           <button
             onClick={() => grade(true)}
