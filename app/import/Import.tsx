@@ -133,7 +133,7 @@ export function Import({
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={10}
-            placeholder="粘贴中文内容…"
+            placeholder="Paste Chinese text here…    粘贴中文内容…"
             className="mt-1 w-full rounded-md border border-zinc-300 bg-white p-3 text-base leading-relaxed dark:border-zinc-700 dark:bg-zinc-900"
           />
         </label>
