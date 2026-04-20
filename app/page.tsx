@@ -12,6 +12,11 @@ const links = [
     subtitle: "Paste a blog post, lesson, or podcast transcript → turns into a deck.",
   },
   {
+    href: "/starter",
+    title: "Starter content",
+    subtitle: "Curated articles to bootstrap your decks — or adapt one to your level first via Claude.",
+  },
+  {
     href: "/calibrate",
     title: "Calibrate",
     subtitle: "Retake the known-word quiz to update your baseline.",
