@@ -4,25 +4,67 @@ import { useState } from "react";
 import Link from "next/link";
 import type { StarterArticle } from "@/data/starter";
 
+type CopyState = "prompt" | "text" | null;
+type CopyError = "prompt" | "text" | null;
+
+async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // fall through to execCommand
+  }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.top = "0";
+    ta.style.left = "0";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
 export function StarterDetail({ article }: { article: StarterArticle }) {
   const [level, setLevel] = useState<1 | 2 | 3 | 4 | 5 | 6>(
     Math.max(1, article.suggestedHsk - 1) as 1 | 2 | 3 | 4 | 5 | 6,
   );
-  const [copied, setCopied] = useState<"prompt" | "text" | null>(null);
+  const [copied, setCopied] = useState<CopyState>(null);
+  const [copyError, setCopyError] = useState<CopyError>(null);
   const [simplified, setSimplified] = useState("");
 
   const simplifyPrompt = buildSimplifyPrompt(article.text, level);
 
   async function copyPrompt() {
-    await navigator.clipboard.writeText(simplifyPrompt);
-    setCopied("prompt");
-    setTimeout(() => setCopied(null), 2000);
+    const ok = await copyToClipboard(simplifyPrompt);
+    if (ok) {
+      setCopied("prompt");
+      setCopyError(null);
+      setTimeout(() => setCopied(null), 2000);
+    } else {
+      setCopyError("prompt");
+    }
   }
 
   async function copyText() {
-    await navigator.clipboard.writeText(article.text);
-    setCopied("text");
-    setTimeout(() => setCopied(null), 2000);
+    const ok = await copyToClipboard(article.text);
+    if (ok) {
+      setCopied("text");
+      setCopyError(null);
+      setTimeout(() => setCopied(null), 2000);
+    } else {
+      setCopyError("text");
+    }
   }
 
   const importHref =
@@ -68,6 +110,12 @@ export function StarterDetail({ article }: { article: StarterArticle }) {
             Import as-is →
           </Link>
         </div>
+        {copyError === "text" && (
+          <p className="mt-2 text-xs text-rose-700 dark:text-rose-300">
+            Copy didn&rsquo;t work. Select the text above manually and copy with{" "}
+            <kbd>⌘C</kbd>.
+          </p>
+        )}
       </section>
 
       <section className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900 dark:bg-emerald-900/10">
@@ -98,13 +146,17 @@ export function StarterDetail({ article }: { article: StarterArticle }) {
                 vocabulary to learn.
               </span>
             </label>
-            <details className="mt-2">
+            <details className="mt-2" open={copyError === "prompt"}>
               <summary className="cursor-pointer select-none text-xs text-zinc-600 dark:text-zinc-400">
-                View the full prompt
+                View the full prompt (or select manually if copy fails)
               </summary>
-              <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-white p-3 text-xs text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
-                {simplifyPrompt}
-              </pre>
+              <textarea
+                readOnly
+                value={simplifyPrompt}
+                onFocus={(e) => e.currentTarget.select()}
+                rows={10}
+                className="mt-2 w-full whitespace-pre-wrap rounded-md border border-zinc-200 bg-white p-3 text-xs text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+              />
             </details>
             <div className="mt-2 flex flex-wrap gap-2">
               <button
@@ -114,6 +166,12 @@ export function StarterDetail({ article }: { article: StarterArticle }) {
                 {copied === "prompt" ? "Copied ✓" : "Copy simplify prompt"}
               </button>
             </div>
+            {copyError === "prompt" && (
+              <p className="mt-2 text-xs text-rose-700 dark:text-rose-300">
+                Couldn&rsquo;t access the clipboard automatically. Open &ldquo;View the full prompt&rdquo;
+                above, tap the box, and copy it manually.
+              </p>
+            )}
           </li>
 
           <li>
