@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { analyzeText, createDeck } from "./actions";
-import type { GradeResult, GradedWord, Verdict } from "@/lib/grade";
+import { analyzeText, createDeck, type AnalyzeResult } from "./actions";
+import type { GradedWord, Verdict } from "@/lib/grade";
+import type { GrammarMatch } from "@/lib/grammar";
 import type { HskLevel } from "@/lib/hsk";
 
 type Kind = "article" | "podcast" | "other";
@@ -29,7 +30,7 @@ export function Import({
   const [title, setTitle] = useState(prefill?.title ?? "");
   const [kind, setKind] = useState<Kind>(prefill?.kind ?? "article");
   const [level, setLevel] = useState<HskLevel>(defaultLevel);
-  const [result, setResult] = useState<GradeResult | null>(null);
+  const [result, setResult] = useState<AnalyzeResult | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [analyzing, startAnalyzing] = useTransition();
   const [creating, startCreating] = useTransition();
@@ -169,7 +170,7 @@ function Analysis({
   create,
   creating,
 }: {
-  result: GradeResult;
+  result: AnalyzeResult;
   selected: Set<string>;
   toggle: (hanzi: string) => void;
   create: () => void;
@@ -236,6 +237,10 @@ function Analysis({
           toggle={toggle}
           defaultUnchecked
         />
+      )}
+
+      {result.grammar.length > 0 && (
+        <GrammarSection matches={result.grammar} />
       )}
 
       <section className="sticky bottom-0 -mx-6 border-t border-zinc-200 bg-white/95 px-6 py-4 backdrop-blur dark:border-zinc-800 dark:bg-black/95">
@@ -436,6 +441,86 @@ function OtherHelp() {
         paste it below.
       </p>
     </div>
+  );
+}
+
+function GrammarSection({ matches }: { matches: GrammarMatch[] }) {
+  const sorted = [...matches].sort((a, b) => a.approxHsk - b.approxHsk);
+  return (
+    <section>
+      <h2 className="text-lg font-medium">Grammar points in this text ({matches.length})</h2>
+      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+        Structures worth studying alongside the vocabulary. Each link opens the
+        canonical explanation on Chinese Grammar Wiki.
+      </p>
+      <ul className="mt-4 space-y-3">
+        {sorted.map((m) => (
+          <li
+            key={m.pointId}
+            className="rounded-lg border border-violet-200 bg-violet-50 p-4 dark:border-violet-900 dark:bg-violet-900/10"
+          >
+            <div className="flex items-baseline justify-between gap-2">
+              <div>
+                <div className="font-medium">{m.name}</div>
+                <div className="text-sm text-violet-900 dark:text-violet-200">
+                  {m.patternZh}
+                </div>
+              </div>
+              <div className="flex shrink-0 items-baseline gap-2 text-xs text-zinc-500">
+                <span className="rounded-full bg-white px-2 py-0.5 dark:bg-zinc-900">
+                  {m.cefr}
+                </span>
+                <span className="rounded-full bg-white px-2 py-0.5 dark:bg-zinc-900">
+                  ~HSK {m.approxHsk}
+                </span>
+              </div>
+            </div>
+            <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-300">
+              {m.description}
+            </p>
+            <blockquote className="mt-3 rounded-md border-l-2 border-violet-400 bg-white px-3 py-2 text-base leading-relaxed text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
+              <GrammarHighlight
+                sentence={m.sentence}
+                matchedText={m.matchedText}
+                matchStart={m.matchStart}
+              />
+            </blockquote>
+            <div className="mt-3">
+              <a
+                href={m.wikiUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-violet-700 underline hover:text-violet-900 dark:text-violet-300 dark:hover:text-violet-100"
+              >
+                Read more on Chinese Grammar Wiki →
+              </a>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function GrammarHighlight({
+  sentence,
+  matchedText,
+  matchStart,
+}: {
+  sentence: string;
+  matchedText: string;
+  matchStart: number;
+}) {
+  const before = sentence.slice(0, matchStart);
+  const after = sentence.slice(matchStart + matchedText.length);
+  return (
+    <>
+      <span>{before}</span>
+      <mark className="rounded bg-violet-200/80 px-0.5 font-medium text-violet-950 dark:bg-violet-500/40 dark:text-violet-100">
+        {matchedText}
+      </mark>
+      <span>{after}</span>
+    </>
   );
 }
 

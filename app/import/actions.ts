@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { gradeText, type GradeResult } from "@/lib/grade";
+import { detectGrammarPoints, type GrammarMatch } from "@/lib/grammar";
 import type { HskLevel } from "@/lib/hsk";
 import { findExampleSentence } from "@/lib/sentences";
 import { initialState } from "@/lib/srs";
@@ -12,12 +13,16 @@ async function loadKnownSet(): Promise<Set<string>> {
   return new Set(r.rows.map((row) => String(row.hanzi)));
 }
 
+export type AnalyzeResult = GradeResult & { grammar: GrammarMatch[] };
+
 export async function analyzeText(
   text: string,
   targetLevel: HskLevel,
-): Promise<GradeResult> {
+): Promise<AnalyzeResult> {
   const knownSet = await loadKnownSet();
-  return gradeText(text, { knownSet, targetLevel });
+  const grade = gradeText(text, { knownSet, targetLevel });
+  const grammar = detectGrammarPoints(text);
+  return { ...grade, grammar };
 }
 
 export type CreateDeckInput = {
