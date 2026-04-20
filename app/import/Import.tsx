@@ -13,6 +13,7 @@ const verdictStyles: Record<Verdict, string> = {
   TARGET: "bg-amber-200 text-amber-950 font-medium dark:bg-amber-500/40 dark:text-amber-100",
   TOO_HARD: "bg-rose-100 text-rose-900 dark:bg-rose-900/40 dark:text-rose-200",
   BEYOND_HSK: "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300",
+  PROPER_NOUN: "bg-sky-100 text-sky-900 dark:bg-sky-900/40 dark:text-sky-200",
 };
 
 type Prefill = { text: string; title: string; kind: Kind };
@@ -37,13 +38,14 @@ export function Import({
     startAnalyzing(async () => {
       const r = await analyzeText(text, level);
       setResult(r);
-      // Default-select all TARGET words
+      // Default-select TARGET words and proper nouns (both high-value).
       const defaults = new Set<string>();
       const seen = new Set<string>();
       for (const g of r.graded) {
         if (seen.has(g.hanzi)) continue;
         seen.add(g.hanzi);
-        if (g.verdict === "TARGET") defaults.add(g.hanzi);
+        if (g.verdict === "TARGET" || g.verdict === "PROPER_NOUN")
+          defaults.add(g.hanzi);
       }
       setSelected(defaults);
     });
@@ -179,6 +181,7 @@ function Analysis({
   const targetWords = dedupe(result.graded.filter((g) => g.verdict === "TARGET"));
   const beyondWords = dedupe(result.graded.filter((g) => g.verdict === "BEYOND_HSK"));
   const tooHardWords = dedupe(result.graded.filter((g) => g.verdict === "TOO_HARD"));
+  const properNouns = dedupe(result.graded.filter((g) => g.verdict === "PROPER_NOUN"));
 
   const fit = fitVerdict(pct(result.counts.TARGET), pct(result.counts.TOO_HARD));
 
@@ -194,6 +197,16 @@ function Analysis({
         </div>
         <p className={`mt-3 text-sm ${fit.className}`}>{fit.message}</p>
       </section>
+
+      {properNouns.length > 0 && (
+        <WordPicker
+          title={`Names & proper nouns (${properNouns.length} unique)`}
+          subtitle="Companies, people, places, products. Default selected — handy to recognize; uncheck any you don't want to memorize."
+          words={properNouns}
+          selected={selected}
+          toggle={toggle}
+        />
+      )}
 
       <WordPicker
         title={`Target words — check to add (${targetWords.length} unique)`}
