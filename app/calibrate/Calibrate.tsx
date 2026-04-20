@@ -2,8 +2,8 @@
 
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { saveCalibration } from "./actions";
-import type { HskEntry, HskLevel } from "@/lib/hsk";
+import { createBaselineDeck, saveCalibration } from "./actions";
+import { cleanTranslations, getHskEntry, type HskEntry, type HskLevel } from "@/lib/hsk";
 
 type Answer = { entry: HskEntry; known: boolean };
 
@@ -128,13 +128,22 @@ export function Calibrate({
 
 function Summary({ answers }: { answers: Answer[] }) {
   const stats = useMemo(() => computeStats(answers), [answers]);
-  const known = answers.filter((a) => a.known).length;
+  const known = answers.filter((a) => a.known);
+  const missed = answers.filter((a) => !a.known);
+  const [creating, startCreating] = useTransition();
+
+  function createBaseline() {
+    if (missed.length === 0) return;
+    startCreating(async () => {
+      await createBaselineDeck(missed.map((a) => a.entry.hanzi));
+    });
+  }
 
   return (
     <>
       <h1 className="text-2xl font-semibold">Calibration complete</h1>
       <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-        You recognized {known} of {answers.length} words.
+        You recognized {known.length} of {answers.length} words.
       </p>
 
       <div className="mt-6 space-y-2">
@@ -168,6 +177,42 @@ function Summary({ answers }: { answers: Answer[] }) {
         </p>
       </div>
 
+      <CadencePlan inferredLevel={stats.inferredLevel} />
+
+      {missed.length > 0 && (
+        <section className="mt-8 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-900/10">
+          <div className="flex items-baseline justify-between gap-3">
+            <div>
+              <div className="text-base font-medium">
+                Words you didn&rsquo;t know ({missed.length})
+              </div>
+              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                Make a deck out of these to start studying them right away.
+              </p>
+            </div>
+            <button
+              onClick={createBaseline}
+              disabled={creating}
+              className="shrink-0 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+            >
+              {creating ? "Creating…" : "Create baseline deck →"}
+            </button>
+          </div>
+          <WordGrid answers={missed} />
+        </section>
+      )}
+
+      {known.length > 0 && (
+        <details className="mt-4 rounded-lg border border-zinc-200 dark:border-zinc-800">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-medium">
+            Words you knew ({known.length})
+          </summary>
+          <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
+            <WordGrid answers={known} />
+          </div>
+        </details>
+      )}
+
       <div className="mt-8 flex flex-wrap gap-3">
         <Link
           href="/import"
@@ -183,6 +228,53 @@ function Summary({ answers }: { answers: Answer[] }) {
         </Link>
       </div>
     </>
+  );
+}
+
+function CadencePlan({ inferredLevel }: { inferredLevel: HskLevel }) {
+  const target = Math.min(6, inferredLevel + 1) as HskLevel;
+  let cadence: string;
+  if (inferredLevel <= 2) {
+    cadence = "Aim for 5–10 new cards per day. Build the daily habit first; speed comes later.";
+  } else if (inferredLevel <= 4) {
+    cadence = "Aim for 10–15 new cards per day, plus reviews of older cards. ~15 minutes total.";
+  } else {
+    cadence = "10–15 new cards per day from real content (articles, podcasts). Reviews will dominate as the deck grows; ~20–30 min/day total.";
+  }
+  return (
+    <div className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900 dark:bg-emerald-900/10">
+      <div className="text-xs uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+        Suggested plan
+      </div>
+      <p className="mt-1 text-sm text-zinc-800 dark:text-zinc-200">
+        Push into <strong>HSK {target}</strong> content. {cadence}
+      </p>
+      <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
+        On import, the app will auto-target HSK {target} words from whatever you paste.
+      </p>
+    </div>
+  );
+}
+
+function WordGrid({ answers }: { answers: Answer[] }) {
+  const sorted = [...answers].sort((a, b) => a.entry.level - b.entry.level);
+  return (
+    <ul className="mt-3 grid grid-cols-1 gap-1 sm:grid-cols-2">
+      {sorted.map((a) => {
+        const entry = getHskEntry(a.entry.hanzi);
+        const glosses = cleanTranslations(entry);
+        return (
+          <li key={a.entry.hanzi} className="flex items-baseline gap-2 text-sm">
+            <span className="text-base">{a.entry.hanzi}</span>
+            <span className="text-xs text-zinc-500">{a.entry.pinyin}</span>
+            <span className="ml-auto text-xs text-zinc-400">HSK {a.entry.level}</span>
+            <span className="basis-full pl-6 text-xs text-zinc-600 dark:text-zinc-400">
+              {glosses.slice(0, 2).join(" · ") || a.entry.translations[0]}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
