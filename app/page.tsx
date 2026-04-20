@@ -17,6 +17,11 @@ const links = [
     subtitle: "Curated articles to bootstrap your decks — or adapt one to your level first via Claude.",
   },
   {
+    href: "/inbox",
+    title: "Turn photos into decks",
+    subtitle: "Drop page photos in a folder, ask Claude Code to extract the Chinese, paste into Import.",
+  },
+  {
     href: "/calibrate",
     title: "Calibrate",
     subtitle: "Retake the known-word quiz to update your baseline.",
