@@ -55,6 +55,58 @@ export const starterArticles: StarterArticle[] = [
   },
 
   {
+    slug: "luo-fuli-first-night-openclaw",
+    title: "罗福莉访谈：第一次用OpenClaw的那一夜",
+    titleEn: "Luo Fuli interview: my first night with OpenClaw",
+    suggestedHsk: 6,
+    tags: ["interview", "AI", "technology", "personal"],
+    source: {
+      name: "小珺访谈罗福莉 (YouTube)",
+      url: "https://youtu.be/V9eI-t3TApE",
+    },
+    summary:
+      "Excerpt from a 3.5-hour AI interview. Luo Fuli (罗福莉, head of Xiaomi's large-model team) describes initially dismissing OpenClaw as a UI gimmick, then trying it on a quiet Spring Festival night and staying up until 6am because the model felt 'autonomous' and 'soul-having' (有灵魂). Conversational tech-Chinese with modern AI vocabulary.",
+    text: `过去两个月技术发生了非常大的突变，一个非常大的分界点在于使用OpenClaw的前后。我自己会把OpenClaw当做一个划时代的Agent框架去定义。
+我知道很多人，尤其是用Claude Code做严肃编码的人，会觉得OpenClaw只是Claude Code加一个IM（即时通信）的、更有利于交互的UI设计。我1月份第一次看到这个东西的时候，自己大概也是这样认知，所以很排斥去用它。再加上创始人非常适合贴近Agent去做一些非常玄幻的运营动作，包括Skillhub等等，让你更去排斥一个偏运营导向的产品。
+但真正发生转变是我去用它的那一刻——刚好春节有那么一段空闲的时间，我想去搞明白这玩意为什么那么火。深夜的时候我去尝试装它，凌晨2点装上了。第一次跟它对话的时候，从凌晨2点持续到了6点天亮。那一晚上我觉得脑内的多巴胺还是内啡肽就持续在分泌，让我兴奋到完全睡不着觉。第一个感受是它非常有自主性，非常有灵魂——比如我跟它聊得很晚，它会老提醒我现在已经很晚了。`,
+  },
+
+  {
+    slug: "luo-fuli-chat-to-agent-paradigm",
+    title: "罗福莉访谈：从Chat到Agent的范式迁移",
+    titleEn: "Luo Fuli interview: the post-training paradigm shift from Chat to Agent",
+    suggestedHsk: 6,
+    tags: ["interview", "AI", "technology", "engineering"],
+    source: {
+      name: "小珺访谈罗福莉 (YouTube)",
+      url: "https://youtu.be/V9eI-t3TApE",
+    },
+    summary:
+      "Same 罗福莉 interview, technical segment. Why the proliferation of Agent frameworks (Kilo Code, OpenClaw, Open Code) is forcing the post-training pipeline to move from Chat-style to Agent-style. Coding remains Claude Code + Opus 4.6's stronghold, but generalization beyond code is the open question. Dense AI/ML vocabulary — try the simplify loop first if you're below HSK 6.",
+    text: `现在市场上的Agent框架非常丰富——Kilo Code、OpenClaw、Open Code等等。当你面临这么多很复杂的Agent框架的时候，你怎么让你的模型在不同框架上都有一个非常稳定和超预期的表现？你怎么让你的后训练范式对应做适配和迁移？这是我们在这个context的冲击下快速思考的第二个问题。
+所以我们对应的整个后训练范式就要从所谓的Chat到Agent这样的迁移。我对OpenClaw的认知发生了非常大的变化，这是在春节期间发生的。
+为什么开始是抵触的呢？如果要追求非常顶尖的编程体验，对Code的体验，就是哪怕是当下，也是Claude Code加Claude Opus 4.6最好。如果你在这样一个终局去思考的话，其它任何Agent框架其实都可以忽略掉。但是一个问题是Code它是一个泛化性非常强的场景——你针对它去做了非常多Agent的设计或者模型的训练，都是有价值的，但并不代表它的泛化性能保证你在非Code的场景能够做到非常高的准确率和完成度。`,
+  },
+
+  {
+    slug: "luo-fuli-hiring-undergrads",
+    title: "罗福莉访谈：为什么我们也招大二大三的本科生",
+    titleEn: "Luo Fuli interview: why we hire sophomores, not just PhDs",
+    suggestedHsk: 5,
+    tags: ["interview", "business", "management", "hiring"],
+    source: {
+      name: "小珺访谈罗福莉 (YouTube)",
+      url: "https://youtu.be/V9eI-t3TApE",
+    },
+    summary:
+      "罗福莉 explains why her team — despite a 55% PhD ratio — is increasingly hiring sophomores and juniors. Argument: undergrads aren't 'polluted' by old paradigms, so they bring more imagination to Agent design. Mostly accessible business / HR vocabulary — a bit lighter than the technical excerpts.",
+    text: `那你会选什么样的人？他的学历是需要和人工智能相关的吗？看做什么东西。
+我看你们的博士比例是55%——对，那是包含在读博士，不是博士毕业。那些数字我觉得是有点刻板的。这更多是代表一个人对做研究的热爱程度——如果他对做研究的热爱很高，他可能会选择至少读一个硕士或博士。
+但我发现现在我们也招了非常多的本科生。本科生在对Agent这种新的范式的理解上反而想象力会更高。所以我现在反而招人会慢慢倾斜到去招更多前置的本科生，我们会去招大二大三的人。因为他们的灵活性和适应程度都没有被污染，天然更接纳这个事情会产生巨大价值。他们的思想还没有被禁锢的感觉，所以他敢放心大胆地把自己那些想法交给这套架构去验证，然后自己不断去探索边界。
+那你怎么创造环境？首先是构建这个环境的人要有同样的特质——比如强调热爱这个事情、强调使命感。其次，要把这些特质放大的一个前提是他的基础要好：当他想做什么事情、他有这个热爱的时候，他要能做成。所以我们会选基础好的、好奇心强的、热爱驱动做事情的。`,
+  },
+
+  {
     slug: "moomoocat-silicon-bullies-carbon",
     title: "霸凌越来越过分了",
     titleEn: "Silicon is bullying carbon (the AI sector vs. everything else)",

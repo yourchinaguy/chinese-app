@@ -35,15 +35,30 @@ async function copyToClipboard(text: string): Promise<boolean> {
   }
 }
 
+// Study-time → target-character mapping. Rough — based on a learner at HSK
+// 4-5 covering ~25-30 Chinese chars/minute when actively flashcarding the
+// target words. Tweak as we learn what sticks.
+//
+// Each option is only shown when the original article is meaningfully longer
+// than its target — trimming to "30 min" (800 chars) is pointless if the
+// original is already 500.
+const LENGTH_OPTIONS = [
+  { minutes: 10, chars: 250, label: "10 min", hint: "~250 chars" },
+  { minutes: 30, chars: 800, label: "30 min", hint: "~800 chars" },
+  { minutes: 0, chars: 0, label: "Full length", hint: "original" },
+] as const;
+type Minutes = (typeof LENGTH_OPTIONS)[number]["minutes"];
+
 export function StarterDetail({ article }: { article: StarterArticle }) {
   const [level, setLevel] = useState<1 | 2 | 3 | 4 | 5 | 6>(
     Math.max(1, article.suggestedHsk - 1) as 1 | 2 | 3 | 4 | 5 | 6,
   );
+  const [minutes, setMinutes] = useState<Minutes>(0); // default = full length
   const [copied, setCopied] = useState<CopyState>(null);
   const [copyError, setCopyError] = useState<CopyError>(null);
   const [simplified, setSimplified] = useState("");
 
-  const simplifyPrompt = buildSimplifyPrompt(article.text, level);
+  const simplifyPrompt = buildSimplifyPrompt(article.text, level, minutes);
 
   async function copyPrompt() {
     const ok = await copyToClipboard(simplifyPrompt);
@@ -138,7 +153,7 @@ export function StarterDetail({ article }: { article: StarterArticle }) {
 
         <ol className="mt-4 space-y-4 text-sm">
           <li>
-            <div className="font-medium">1. Pick your target level and copy the prompt</div>
+            <div className="font-medium">1. Pick your target level + study time, then copy the prompt</div>
             <label className="mt-2 block">
               <span className="text-sm">Target HSK level: {level}</span>
               <input
@@ -156,6 +171,12 @@ export function StarterDetail({ article }: { article: StarterArticle }) {
                 vocabulary to learn.
               </span>
             </label>
+
+            <LengthPicker
+              originalChars={countChars(article.text)}
+              minutes={minutes}
+              setMinutes={setMinutes}
+            />
             <details className="mt-2" open={copyError === "prompt"}>
               <summary className="cursor-pointer select-none text-xs text-zinc-600 dark:text-zinc-400">
                 View the full prompt (or select manually if copy fails)
@@ -238,8 +259,73 @@ export function StarterDetail({ article }: { article: StarterArticle }) {
   );
 }
 
-function buildSimplifyPrompt(text: string, targetLevel: number): string {
+function LengthPicker({
+  originalChars,
+  minutes,
+  setMinutes,
+}: {
+  originalChars: number;
+  minutes: Minutes;
+  setMinutes: (m: Minutes) => void;
+}) {
+  // Drop options whose target length is greater than or equal to the
+  // original — there's nothing to trim TO that point. Full length always shows.
+  const visible = LENGTH_OPTIONS.filter(
+    (o) => o.minutes === 0 || o.chars < originalChars,
+  );
+
+  // If the currently-selected option got hidden (article is shorter than
+  // its target), fall back to Full length on next render.
+  if (!visible.find((o) => o.minutes === minutes)) {
+    setTimeout(() => setMinutes(0), 0);
+  }
+
+  return (
+    <div className="mt-3">
+      <span className="text-sm">How much time do you have?</span>
+      <div className="mt-1.5 flex flex-wrap gap-1.5">
+        {visible.map((opt) => {
+          const active = opt.minutes === minutes;
+          return (
+            <button
+              key={opt.minutes}
+              type="button"
+              onClick={() => setMinutes(opt.minutes)}
+              className={`rounded-md border px-3 py-1.5 text-xs transition ${
+                active
+                  ? "border-emerald-600 bg-emerald-600 text-white"
+                  : "border-zinc-300 bg-white text-zinc-700 hover:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+              }`}
+            >
+              <span className="font-medium">{opt.label}</span>
+              <span className={`ml-1 ${active ? "text-emerald-100" : "text-zinc-500"}`}>
+                · {opt.hint}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <p className="mt-1.5 text-xs text-zinc-500">
+        {minutes === 0
+          ? `Original is about ${originalChars} Chinese characters — Claude will keep that length.`
+          : `Claude will trim to ~${LENGTH_OPTIONS.find((o) => o.minutes === minutes)?.chars} characters while keeping the core argument.`}
+      </p>
+    </div>
+  );
+}
+
+function buildSimplifyPrompt(
+  text: string,
+  targetLevel: number,
+  targetMinutes: number,
+): string {
   const above = Math.min(6, targetLevel + 1);
+  const opt = LENGTH_OPTIONS.find((o) => o.minutes === targetMinutes);
+  const lengthLine =
+    targetMinutes === 0 || !opt
+      ? "- Keep it roughly the same length as the original."
+      : `- Target length: about ${opt.chars} Chinese characters total — the learner has ~${opt.minutes} minutes to study, so trim less essential sentences while keeping the core argument intact. Don't pad to hit the count.`;
+
   return `You are helping me learn Mandarin Chinese. I'm at roughly HSK ${targetLevel}.
 
 Please rewrite the Chinese text below so that:
@@ -248,7 +334,7 @@ Please rewrite the Chinese text below so that:
 - Avoid words at HSK ${Math.min(6, above + 1)} or higher unless they are essential to the meaning and you flag them at the end.
 - Keep the overall meaning, flow, and tone. Don't dumb it down into kid-speak — still feel like real adult Chinese.
 - Prefer shorter sentences and simpler grammatical structures where possible.
-- Keep it roughly the same length as the original.
+${lengthLine}
 - The first time a Chinese proper noun appears (person, place, company, product), follow it with its standard English equivalent or pinyin in parentheses — e.g. 汪滔 (Frank Wang), 深圳 (Shenzhen), 大疆 (DJI), 小红书 (Xiaohongshu / RedNote). Subsequent mentions can stay in Chinese only.
 
 Return ONLY the rewritten Chinese text. No English, no explanation, no markdown. Just the Chinese paragraphs.
