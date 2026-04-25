@@ -47,33 +47,6 @@ export type VocabPackWord = {
 
 export const starterArticles: StarterArticle[] = [
   {
-    slug: "cafe-business-meeting",
-    title: "咖啡馆的商务会面",
-    titleEn: "A business meeting at a café",
-    suggestedHsk: 4,
-    tags: ["business", "daily", "dialogue"],
-    summary:
-      "First-person account of meeting a startup marketing manager over coffee. Practical business vocabulary in context.",
-    text: `今天下午三点，我在咖啡馆见了一位新客户。她是一家新创公司的市场经理，希望我们能帮助她们做品牌推广。
-我们一边喝咖啡一边聊她们的项目。她告诉我，她们的产品主要面向年轻人，所以需要一个更有创意的营销方案。
-我问她预算大概是多少，她说公司给了十万元做三个月的测试。我觉得这个数字还算合理，所以答应下周给她一份详细的计划书。
-离开之前，我们约好下周五再见一次面，讨论具体的合作细节。`,
-  },
-
-  {
-    slug: "wechat-mini-programs",
-    title: "微信小程序如何改变了中国商业",
-    titleEn: "How WeChat Mini Programs changed Chinese commerce",
-    suggestedHsk: 5,
-    tags: ["business", "technology", "trend"],
-    summary:
-      "Short explainer on why WeChat Mini Programs (小程序) became the dominant channel for Chinese businesses since 2017.",
-    text: `微信小程序自从2017年推出以来，已经彻底改变了中国的商业模式。和传统的应用程序不同，小程序不需要下载安装，用户只要扫一扫二维码或者在微信里搜索，就可以直接使用。
-对商家来说，开发小程序的成本比开发独立App低得多。更重要的是，小程序可以利用微信庞大的用户基础，让品牌直接触达消费者。许多餐厅、零售店、甚至政府服务都已经推出了自己的小程序。
-分析人士认为，小程序的成功不仅改变了中国互联网生态，也让微信从一个聊天工具变成了一个连接一切的超级平台。未来几年，小程序很可能继续成为中国商业数字化的重要工具。`,
-  },
-
-  {
     slug: "dji-founder-interview-excerpt",
     title: "大疆创始人访谈节选：关于创新与挑战",
     titleEn: "DJI founder interview excerpt: on innovation and challenges",
@@ -186,10 +159,8 @@ export const starterBundles: StarterBundle[] = [
     name: "Business & finance",
     nameZh: "商业与金融",
     description:
-      "Practical business Chinese — a café meeting dialogue, a WeChat-ecosystem explainer, the DJI founder on innovation, and a sharp finance-blog take on AI's grip on the stock market.",
+      "The DJI founder on innovation and global pressure, plus a sharp finance-blog take on AI's grip on the Chinese stock market.",
     articleSlugs: [
-      "cafe-business-meeting",
-      "wechat-mini-programs",
       "dji-founder-interview-excerpt",
       "moomoocat-silicon-bullies-carbon",
     ],
@@ -199,9 +170,8 @@ export const starterBundles: StarterBundle[] = [
     name: "AI & technology",
     nameZh: "人工智能与科技",
     description:
-      "AI and tech vocabulary across registers — from a startup founder's interview to live discussion of post-training paradigms and team building, plus tech-business news commentary.",
+      "AI and tech vocabulary across registers — DJI's founder, the Luo Fuli interview on post-training paradigms and team building, and finance-blog commentary on AI sector dominance.",
     articleSlugs: [
-      "wechat-mini-programs",
       "dji-founder-interview-excerpt",
       "luo-fuli-first-night-openclaw",
       "luo-fuli-chat-to-agent-paradigm",
