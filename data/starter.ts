@@ -1,6 +1,7 @@
 // Curated starter content. Each piece is ready to import as a deck, or to
-// simplify with Claude.ai (Max Plan) first for a learner at a lower level.
-// Add entries over time; this is meant to grow as Jan curates.
+// simplify with Claude.ai first for a learner at a lower level. Articles are
+// grouped into themed bundles below — "import all" turns a whole bundle into
+// a stack of decks in one click.
 
 export type StarterArticle = {
   slug: string;
@@ -11,6 +12,14 @@ export type StarterArticle = {
   source?: { name: string; url?: string };
   summary: string;
   text: string;
+};
+
+export type StarterBundle = {
+  slug: string;
+  name: string;
+  nameZh?: string;
+  description: string;
+  articleSlugs: string[];
 };
 
 export const starterArticles: StarterArticle[] = [
@@ -132,6 +141,58 @@ export const starterArticles: StarterArticle[] = [
   },
 ];
 
+export const starterBundles: StarterBundle[] = [
+  {
+    slug: "luo-fuli-interview",
+    name: "Luo Fuli interview",
+    nameZh: "罗福莉访谈",
+    description:
+      "Three excerpts from the 3.5-hour 小珺×罗福莉 interview on AI paradigms — narrative, technical, and team-building. Mostly HSK 6 vocabulary; the hiring segment is HSK 5.",
+    articleSlugs: [
+      "luo-fuli-first-night-openclaw",
+      "luo-fuli-chat-to-agent-paradigm",
+      "luo-fuli-hiring-undergrads",
+    ],
+  },
+  {
+    slug: "business-and-finance",
+    name: "Business & finance",
+    nameZh: "商业与金融",
+    description:
+      "Practical business Chinese — a café meeting dialogue, a WeChat-ecosystem explainer, the DJI founder on innovation, and a sharp finance-blog take on AI's grip on the stock market.",
+    articleSlugs: [
+      "cafe-business-meeting",
+      "wechat-mini-programs",
+      "dji-founder-interview-excerpt",
+      "moomoocat-silicon-bullies-carbon",
+    ],
+  },
+  {
+    slug: "ai-and-tech",
+    name: "AI & technology",
+    nameZh: "人工智能与科技",
+    description:
+      "AI and tech vocabulary across registers — from a startup founder's interview to live discussion of post-training paradigms and team building, plus tech-business news commentary.",
+    articleSlugs: [
+      "wechat-mini-programs",
+      "dji-founder-interview-excerpt",
+      "luo-fuli-first-night-openclaw",
+      "luo-fuli-chat-to-agent-paradigm",
+      "moomoocat-silicon-bullies-carbon",
+    ],
+  },
+];
+
 export function getStarterArticle(slug: string): StarterArticle | null {
   return starterArticles.find((a) => a.slug === slug) ?? null;
+}
+
+export function getStarterBundle(slug: string): StarterBundle | null {
+  return starterBundles.find((b) => b.slug === slug) ?? null;
+}
+
+export function getBundleArticles(bundle: StarterBundle): StarterArticle[] {
+  return bundle.articleSlugs
+    .map((s) => getStarterArticle(s))
+    .filter((a): a is StarterArticle => a !== null);
 }
