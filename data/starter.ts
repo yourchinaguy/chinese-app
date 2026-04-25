@@ -25,6 +25,26 @@ export type StarterBundle = {
   articleSlugs: string[];
 };
 
+// A pre-curated word list — handed to us by a textbook, a teacher, or an
+// existing study deck. Different shape from StarterArticle: there's no
+// narrative source text, just a list of (hanzi, pinyin, gloss). Imports as
+// a vocab deck directly, no segmentation / grading / grammar detection.
+export type VocabPack = {
+  slug: string;
+  title: string;
+  titleEn: string;
+  description: string;
+  source?: { name: string; url?: string };
+  words: VocabPackWord[];
+};
+
+export type VocabPackWord = {
+  hanzi: string;
+  pinyin: string;
+  gloss: string;
+  pos?: string;
+};
+
 export const starterArticles: StarterArticle[] = [
   {
     slug: "cafe-business-meeting",

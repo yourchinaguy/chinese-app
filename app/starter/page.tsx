@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { starterArticles, starterBundles, getBundleArticles } from "@/data/starter";
+import { vocabPacks } from "@/data/vocab-packs";
 
 export default function StarterPage() {
   return (
@@ -52,6 +53,46 @@ export default function StarterPage() {
           })}
         </ul>
       </section>
+
+      {vocabPacks.length > 0 && (
+        <section className="mt-12">
+          <h2 className="text-sm font-medium uppercase tracking-wide text-zinc-500">
+            Vocab packs
+          </h2>
+          <p className="mt-2 text-xs text-zinc-500">
+            Pre-curated word lists from textbooks. Imports straight to a
+            vocab deck — no narrative text, no grammar detection.
+          </p>
+          <ul className="mt-3 space-y-3">
+            {vocabPacks.map((p) => (
+              <li key={p.slug}>
+                <Link
+                  href={`/starter/pack/${p.slug}`}
+                  className="block rounded-lg border border-zinc-200 p-5 transition hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <div>
+                      <div className="text-lg font-medium">{p.title}</div>
+                      <div className="text-sm text-zinc-500">{p.titleEn}</div>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                      {p.words.length} words
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                    {p.description}
+                  </p>
+                  {p.source && (
+                    <div className="mt-2 text-xs text-zinc-500">
+                      Source: {p.source.name}
+                    </div>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="mt-12">
         <h2 className="text-sm font-medium uppercase tracking-wide text-zinc-500">
