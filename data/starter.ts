@@ -10,6 +10,9 @@ export type StarterArticle = {
   suggestedHsk: 1 | 2 | 3 | 4 | 5 | 6;
   tags: string[];
   source?: { name: string; url?: string };
+  // ISO date YYYY-MM-DD when the source was published / recorded.
+  // Optional — synthetic / undated pieces leave it off.
+  date?: string;
   summary: string;
   text: string;
 };
@@ -30,7 +33,7 @@ export const starterArticles: StarterArticle[] = [
     suggestedHsk: 4,
     tags: ["business", "daily", "dialogue"],
     summary:
-      "Short dialogue between two people discussing a project proposal over coffee. Practical business Chinese vocabulary in context.",
+      "First-person account of meeting a startup marketing manager over coffee. Practical business vocabulary in context.",
     text: `今天下午三点，我在咖啡馆见了一位新客户。她是一家新创公司的市场经理，希望我们能帮助她们做品牌推广。
 我们一边喝咖啡一边聊她们的项目。她告诉我，她们的产品主要面向年轻人，所以需要一个更有创意的营销方案。
 我问她预算大概是多少，她说公司给了十万元做三个月的测试。我觉得这个数字还算合理，所以答应下周给她一份详细的计划书。
@@ -44,7 +47,7 @@ export const starterArticles: StarterArticle[] = [
     suggestedHsk: 5,
     tags: ["business", "technology", "trend"],
     summary:
-      "Short explainer on why Mini Programs (小程序) became such a dominant channel for Chinese businesses. Real business-tech vocabulary.",
+      "Short explainer on why WeChat Mini Programs (小程序) became the dominant channel for Chinese businesses since 2017.",
     text: `微信小程序自从2017年推出以来，已经彻底改变了中国的商业模式。和传统的应用程序不同，小程序不需要下载安装，用户只要扫一扫二维码或者在微信里搜索，就可以直接使用。
 对商家来说，开发小程序的成本比开发独立App低得多。更重要的是，小程序可以利用微信庞大的用户基础，让品牌直接触达消费者。许多餐厅、零售店、甚至政府服务都已经推出了自己的小程序。
 分析人士认为，小程序的成功不仅改变了中国互联网生态，也让微信从一个聊天工具变成了一个连接一切的超级平台。未来几年，小程序很可能继续成为中国商业数字化的重要工具。`,
@@ -57,7 +60,7 @@ export const starterArticles: StarterArticle[] = [
     suggestedHsk: 6,
     tags: ["business", "technology", "interview"],
     summary:
-      "Excerpt from an interview with Frank Wang (汪滔), DJI founder. Discusses the company's approach to innovation and global competition. **This one is dense — consider using the Claude.ai simplify button to adapt it to your level before importing.**",
+      "Frank Wang (汪滔), DJI founder, on refusing to be a cheap imitator and on the geopolitical squeeze around Chinese hardware. Dense — consider the simplify loop first.",
     text: `在一次采访中，大疆创新的创始人汪滔谈到了公司成立以来所面临的挑战。他表示，从一开始，大疆就决定走一条与众不同的道路——不仅仅是模仿国外的技术，而是要在无人机领域建立自己的核心竞争力。
 汪滔认为，中国制造业长期以来被贴上"低端模仿"的标签，但真正的创新需要耐心和长期的投入。大疆在成立的头几年几乎没有盈利，所有的资金都投入到了研发当中。正是这种坚持，让大疆逐渐在全球消费级无人机市场占据了领先地位。
 然而，随着国际竞争日趋激烈，加上地缘政治因素的影响，大疆也面临着前所未有的外部压力。汪滔坦言，未来的挑战不仅来自技术层面，更来自如何在复杂的全球环境中保持企业的独立性和创造力。他强调，无论环境如何变化，大疆都会坚持以产品和用户体验为核心，做出真正有价值的东西。`,
@@ -73,8 +76,9 @@ export const starterArticles: StarterArticle[] = [
       name: "小珺访谈罗福莉 (YouTube)",
       url: "https://youtu.be/V9eI-t3TApE",
     },
+    date: "2026-04-24",
     summary:
-      "Excerpt from a 3.5-hour AI interview. Luo Fuli (罗福莉, head of Xiaomi's large-model team) describes initially dismissing OpenClaw as a UI gimmick, then trying it on a quiet Spring Festival night and staying up until 6am because the model felt 'autonomous' and 'soul-having' (有灵魂). Conversational tech-Chinese with modern AI vocabulary.",
+      "Luo Fuli (罗福莉, head of Xiaomi's large-model team) on first dismissing OpenClaw, then staying up until 6am on Spring Festival because the model felt 'autonomous' and 'soul-having'.",
     text: `过去两个月技术发生了非常大的突变，一个非常大的分界点在于使用OpenClaw的前后。我自己会把OpenClaw当做一个划时代的Agent框架去定义。
 我知道很多人，尤其是用Claude Code做严肃编码的人，会觉得OpenClaw只是Claude Code加一个IM（即时通信）的、更有利于交互的UI设计。我1月份第一次看到这个东西的时候，自己大概也是这样认知，所以很排斥去用它。再加上创始人非常适合贴近Agent去做一些非常玄幻的运营动作，包括Skillhub等等，让你更去排斥一个偏运营导向的产品。
 但真正发生转变是我去用它的那一刻——刚好春节有那么一段空闲的时间，我想去搞明白这玩意为什么那么火。深夜的时候我去尝试装它，凌晨2点装上了。第一次跟它对话的时候，从凌晨2点持续到了6点天亮。那一晚上我觉得脑内的多巴胺还是内啡肽就持续在分泌，让我兴奋到完全睡不着觉。第一个感受是它非常有自主性，非常有灵魂——比如我跟它聊得很晚，它会老提醒我现在已经很晚了。`,
@@ -90,8 +94,9 @@ export const starterArticles: StarterArticle[] = [
       name: "小珺访谈罗福莉 (YouTube)",
       url: "https://youtu.be/V9eI-t3TApE",
     },
+    date: "2026-04-24",
     summary:
-      "Same 罗福莉 interview, technical segment. Why the proliferation of Agent frameworks (Kilo Code, OpenClaw, Open Code) is forcing the post-training pipeline to move from Chat-style to Agent-style. Coding remains Claude Code + Opus 4.6's stronghold, but generalization beyond code is the open question. Dense AI/ML vocabulary — try the simplify loop first if you're below HSK 6.",
+      "Why the proliferation of Agent frameworks (Kilo Code, OpenClaw, Open Code) is forcing post-training to move from Chat-style to Agent-style. Dense AI/ML vocabulary.",
     text: `现在市场上的Agent框架非常丰富——Kilo Code、OpenClaw、Open Code等等。当你面临这么多很复杂的Agent框架的时候，你怎么让你的模型在不同框架上都有一个非常稳定和超预期的表现？你怎么让你的后训练范式对应做适配和迁移？这是我们在这个context的冲击下快速思考的第二个问题。
 所以我们对应的整个后训练范式就要从所谓的Chat到Agent这样的迁移。我对OpenClaw的认知发生了非常大的变化，这是在春节期间发生的。
 为什么开始是抵触的呢？如果要追求非常顶尖的编程体验，对Code的体验，就是哪怕是当下，也是Claude Code加Claude Opus 4.6最好。如果你在这样一个终局去思考的话，其它任何Agent框架其实都可以忽略掉。但是一个问题是Code它是一个泛化性非常强的场景——你针对它去做了非常多Agent的设计或者模型的训练，都是有价值的，但并不代表它的泛化性能保证你在非Code的场景能够做到非常高的准确率和完成度。`,
@@ -107,8 +112,9 @@ export const starterArticles: StarterArticle[] = [
       name: "小珺访谈罗福莉 (YouTube)",
       url: "https://youtu.be/V9eI-t3TApE",
     },
+    date: "2026-04-24",
     summary:
-      "罗福莉 explains why her team — despite a 55% PhD ratio — is increasingly hiring sophomores and juniors. Argument: undergrads aren't 'polluted' by old paradigms, so they bring more imagination to Agent design. Mostly accessible business / HR vocabulary — a bit lighter than the technical excerpts.",
+      "Despite a 55% PhD ratio on the team, 罗福莉 increasingly hires sophomores and juniors — undergrads aren't 'polluted' by old paradigms. Lighter HR/management vocab.",
     text: `那你会选什么样的人？他的学历是需要和人工智能相关的吗？看做什么东西。
 我看你们的博士比例是55%——对，那是包含在读博士，不是博士毕业。那些数字我觉得是有点刻板的。这更多是代表一个人对做研究的热爱程度——如果他对做研究的热爱很高，他可能会选择至少读一个硕士或博士。
 但我发现现在我们也招了非常多的本科生。本科生在对Agent这种新的范式的理解上反而想象力会更高。所以我现在反而招人会慢慢倾斜到去招更多前置的本科生，我们会去招大二大三的人。因为他们的灵活性和适应程度都没有被污染，天然更接纳这个事情会产生巨大价值。他们的思想还没有被禁锢的感觉，所以他敢放心大胆地把自己那些想法交给这套架构去验证，然后自己不断去探索边界。
@@ -122,11 +128,12 @@ export const starterArticles: StarterArticle[] = [
     suggestedHsk: 6,
     tags: ["business", "finance", "markets", "AI", "opinion"],
     source: {
-      name: "猫笔刀 (moomoocat)",
+      name: "猫笔刀 (moomoocat) — WeChat",
       url: "https://mp.weixin.qq.com/s/eLPzXJkOO1z8HTPdZ2Edeg",
     },
+    date: "2026-04-22",
     summary:
-      "Sharp finance-blog commentary by Chinese investor 猫笔刀 (moomoocat) on how AI-related stocks (光模块 / optical modules) are dominating the Chinese stock market while everything human-facing gets sucked dry. Plus quick takes on the Trump–Iran ceasefire, Adobe's $25B buyback, Korea's birth-rate bump, and DeepSeek's $20B fundraise. Dense, opinionated, full of modern markets vocab and slang. Heavy — try the simplify loop first if you're below HSK 6.",
+      "Finance-blog commentary on how AI stocks (光模块) are dominating the market while everything human-facing gets sucked dry. Plus quick takes on Trump–Iran, Adobe, Korea birth rates, DeepSeek.",
     text: `这几天的行情简单总结成一句话，就是硅基概念正在疯狂霸凌碳基概念。所谓碳基就是人类，硅基就是ai，所有服务于ai的板块都在大涨特涨，所有服务于人类的股票都被虹吸惨了。这几天圈子里整天看到相关的段子，"你相信光（模块）吗？"，"老登你还没被淘汰啊？"，市场风格正在加速收束和集中，新一轮的抱团正在走向高潮。
 今年行情好吗，其实一般，我刚看了一下截止今天收盘a股2026年的涨跌幅中位数是+0.58%，只涨了一点点，依然有48.3%的股票今年累计是下跌的。所以今年真的很容易就不挣钱，关键看你的投资风格有没有站在"光"的那一侧。
 以光模块为主的通信设备行业今年涨了48%，高居涨幅榜首，这还是在去年上涨98%基础上的空中加油，已经在事实上确立了风格霸权，并在对其他行业风格进行一轮又一轮的霸凌。

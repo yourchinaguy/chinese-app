@@ -60,6 +60,13 @@ export default async function BundlePage({
               <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                 {a.summary}
               </p>
+              {(a.source || a.date) && (
+                <div className="mt-2 text-xs text-zinc-500">
+                  {a.source?.name}
+                  {a.source && a.date && " · "}
+                  {a.date}
+                </div>
+              )}
             </Link>
           </li>
         ))}
