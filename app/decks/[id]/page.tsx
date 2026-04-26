@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { grammarPointById, wikiUrlFor } from "@/data/grammar-points";
 import { cleanTranslations, getHskEntry } from "@/lib/hsk";
+import { DeleteButton } from "./DeleteButton";
 import { GrammarReview, type GrammarCard } from "./GrammarReview";
 import { OriginalVersionSection } from "./OriginalVersionSection";
 import { Review } from "./Review";
@@ -167,6 +168,9 @@ export default async function DeckPage({
             ready={ready}
           />
         )}
+        <div className="mt-10 text-right">
+          <DeleteButton deckId={deck.id} deckName={deck.name} cardCount={total} />
+        </div>
       </main>
     );
   }
