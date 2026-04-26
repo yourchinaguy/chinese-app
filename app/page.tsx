@@ -22,6 +22,11 @@ const links = [
     subtitle: "Drop page photos in a folder, ask Claude Code to extract the Chinese, paste into Import.",
   },
   {
+    href: "/retest",
+    title: "Retest",
+    subtitle: "Quick 20-word checks per HSK level / textbook / recently studied. Misses build a study deck automatically.",
+  },
+  {
     href: "/calibrate",
     title: "Calibrate",
     subtitle: "Retake the known-word quiz to update your baseline.",

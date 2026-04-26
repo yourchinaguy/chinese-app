@@ -82,6 +82,18 @@ const alters = [
   `ALTER TABLE sources ADD COLUMN original_text TEXT`,
 ];
 
+// New tables added after the initial schema. Idempotent via IF NOT EXISTS.
+const newTables = [
+  `CREATE TABLE IF NOT EXISTS retests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pool TEXT NOT NULL,
+    completed_at INTEGER NOT NULL,
+    sampled_count INTEGER NOT NULL,
+    known_count INTEGER NOT NULL
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_retests_pool ON retests(pool, completed_at)`,
+];
+
 for (const sql of alters) {
   const firstLine = sql.trim().split("\n")[0];
   process.stdout.write(`→ ${firstLine} ... `);
@@ -95,6 +107,13 @@ for (const sql of alters) {
       throw e;
     }
   }
+}
+
+for (const sql of newTables) {
+  const firstLine = sql.trim().split("\n")[0];
+  process.stdout.write(`→ ${firstLine} ... `);
+  await db.execute(sql);
+  process.stdout.write("ok\n");
 }
 
 console.log("\nMigrations complete.");
