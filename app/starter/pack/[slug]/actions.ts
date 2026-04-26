@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getVocabPack } from "@/data/vocab-packs";
 import { db } from "@/lib/db";
 import { getHskLevel } from "@/lib/hsk";
+import { toToneMarks } from "@/lib/pinyin";
 import { initialState } from "@/lib/srs";
 
 // Import a vocab pack as a single vocab deck. Bypasses the analyze pipeline
@@ -25,7 +26,10 @@ export async function importVocabPack(slug: string): Promise<void> {
         existing.gloss = `${existing.gloss} / ${w.gloss}`;
       }
     } else {
-      merged.set(w.hanzi, { pinyin: w.pinyin, gloss: w.gloss });
+      merged.set(w.hanzi, {
+        pinyin: toToneMarks(w.pinyin) ?? w.pinyin,
+        gloss: w.gloss,
+      });
     }
   }
 

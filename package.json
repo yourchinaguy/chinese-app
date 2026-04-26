@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "migrate": "node --env-file=.env.local scripts/migrate.mjs",
-    "import-text": "tsx --env-file=.env.local scripts/import-text.ts"
+    "import-text": "tsx --env-file=.env.local scripts/import-text.ts",
+    "normalize-pinyin": "tsx --env-file=.env.local scripts/normalize-pinyin.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.17.2",

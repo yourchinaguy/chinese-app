@@ -3,6 +3,7 @@ import { getStarterArticle } from "@/data/starter";
 import { gradeText } from "./grade";
 import { detectGrammarPoints } from "./grammar";
 import { type HskLevel } from "./hsk";
+import { toToneMarks } from "./pinyin";
 import { findExampleSentence } from "./sentences";
 import { initialState } from "./srs";
 
@@ -94,7 +95,7 @@ export async function importTextAsDecks(
         args: [
           deckId,
           hanzi,
-          g?.pinyin ?? null,
+          toToneMarks(g?.pinyin) ?? null,
           g?.gloss ?? null,
           g?.hskLevel ?? null,
           example,
