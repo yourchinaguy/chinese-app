@@ -13,6 +13,20 @@ type DeckRow = {
   due: number;
 };
 
+// Most deck names follow a pattern like
+//   '<source>：<topic>（HSK 4 改写） — grammar'
+// We only need the leading 'source' for the list view; the rest is metadata
+// already encoded in the badges. Trim at the first separator.
+function shortName(name: string): string {
+  const seps = ["：", "（", "(", " — ", " - "];
+  let cut = name.length;
+  for (const s of seps) {
+    const i = name.indexOf(s);
+    if (i > 0 && i < cut) cut = i;
+  }
+  return name.slice(0, cut).trim();
+}
+
 async function listDecks(): Promise<DeckRow[]> {
   const now = Math.floor(Date.now() / 1000);
   const r = await db().execute({
@@ -82,12 +96,13 @@ export default async function DecksPage() {
             >
               <Link
                 href={`/decks/${d.id}`}
+                title={d.name}
                 className="flex min-w-0 flex-1 items-center justify-between gap-3 px-5 py-4"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="min-w-0 truncate font-medium">
-                      {d.name}
+                      {shortName(d.name)}
                     </span>
                     <span
                       className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${

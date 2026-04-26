@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { grammarPointById, wikiUrlFor } from "@/data/grammar-points";
 import { cleanTranslations, getHskEntry } from "@/lib/hsk";
+import { DeckTitle } from "./DeckTitle";
 import { DeleteButton } from "./DeleteButton";
 import { GrammarReview, type GrammarCard } from "./GrammarReview";
 import { OriginalVersionSection } from "./OriginalVersionSection";
@@ -153,7 +154,7 @@ export default async function DeckPage({
             ← decks
           </Link>
         </div>
-        <h1 className="text-2xl font-semibold">{deck.name}</h1>
+        <DeckTitle deckId={deck.id} name={deck.name} />
         <div className="mt-10 rounded-lg border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-700">
           <p className="text-lg">You&rsquo;re caught up.</p>
           <p className="mt-1 text-sm text-zinc-500">

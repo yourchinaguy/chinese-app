@@ -10,6 +10,18 @@ import { db } from "@/lib/db";
 // + simplified version), and orphaned sources cost almost nothing.
 // known_words entries promoted via Leitner box 5 also stay; the user
 // genuinely learned those.
+export async function renameDeck(id: number, name: string): Promise<void> {
+  const trimmed = name.trim();
+  if (!trimmed) throw new Error("name is required");
+  if (trimmed.length > 200) throw new Error("name too long (max 200 chars)");
+  await db().execute({
+    sql: "UPDATE decks SET name = ? WHERE id = ?",
+    args: [trimmed, id],
+  });
+  revalidatePath("/decks");
+  revalidatePath(`/decks/${id}`);
+}
+
 export async function deleteDeck(id: number, redirectTo?: string): Promise<void> {
   const client = db();
   await client.execute({
