@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { RowDeleteButton } from "./RowDeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -75,14 +76,19 @@ export default async function DecksPage() {
       ) : (
         <ul className="mt-6 space-y-2">
           {decks.map((d) => (
-            <li key={d.id}>
+            <li
+              key={d.id}
+              className="flex items-stretch gap-1 rounded-lg border border-zinc-200 transition hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+            >
               <Link
                 href={`/decks/${d.id}`}
-                className="flex items-center justify-between rounded-lg border border-zinc-200 px-5 py-4 transition hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+                className="flex min-w-0 flex-1 items-center justify-between gap-3 px-5 py-4"
               >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate font-medium">{d.name}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="min-w-0 truncate font-medium">
+                      {d.name}
+                    </span>
                     <span
                       className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
                         d.deckType === "grammar"
@@ -98,11 +104,18 @@ export default async function DecksPage() {
                   </div>
                 </div>
                 {d.due > 0 && (
-                  <span className="ml-3 shrink-0 rounded-full bg-amber-200 px-3 py-0.5 text-xs font-medium text-amber-950 dark:bg-amber-500/30 dark:text-amber-100">
+                  <span className="shrink-0 rounded-full bg-amber-200 px-3 py-0.5 text-xs font-medium text-amber-950 dark:bg-amber-500/30 dark:text-amber-100">
                     {d.due} due
                   </span>
                 )}
               </Link>
+              <div className="flex shrink-0 items-center pr-2">
+                <RowDeleteButton
+                  deckId={d.id}
+                  deckName={d.name}
+                  cardCount={d.total}
+                />
+              </div>
             </li>
           ))}
         </ul>

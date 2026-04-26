@@ -1,9 +1,12 @@
 "use client";
 
 import { useTransition } from "react";
-import { deleteDeck } from "../actions";
+import { deleteDeck } from "./actions";
 
-export function DeleteButton({
+// Compact ✕ button for the /decks list row. Confirms before delete; lighter
+// styling than the in-deck-detail Delete button so it doesn't dominate the
+// row.
+export function RowDeleteButton({
   deckId,
   deckName,
   cardCount,
@@ -22,7 +25,7 @@ export function DeleteButton({
     );
     if (!ok) return;
     startTransition(async () => {
-      await deleteDeck(deckId, "/decks");
+      await deleteDeck(deckId);
     });
   }
 
@@ -30,9 +33,11 @@ export function DeleteButton({
     <button
       onClick={handleClick}
       disabled={pending}
-      className="text-xs text-rose-700 underline hover:text-rose-900 disabled:opacity-50 dark:text-rose-300 dark:hover:text-rose-100"
+      title={`Delete "${deckName}"`}
+      aria-label={`Delete "${deckName}"`}
+      className="shrink-0 rounded-md p-2 text-zinc-400 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 dark:hover:bg-rose-900/20 dark:hover:text-rose-300"
     >
-      {pending ? "Deleting…" : "Delete deck"}
+      {pending ? "…" : "✕"}
     </button>
   );
 }
