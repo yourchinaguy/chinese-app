@@ -200,7 +200,7 @@ function ProgressStats({ progress }: { progress: DeckProgress }) {
       <div className="grid grid-cols-3 gap-2 text-xs">
         <Stat label="Got right" value={String(progress.gotRight)} tone="ok" />
         <Stat label="Need work" value={String(progress.needWork)} tone="warn" />
-        <Stat label="Still to review" value={String(progress.stillToLearn)} />
+        <Stat label="To review" value={String(progress.stillToLearn)} />
       </div>
       <div className="grid grid-cols-2 gap-2 text-xs">
         <Stat label="Reviewed" value={`${progress.reviewedCount} / ${total}`} />
