@@ -38,7 +38,56 @@ export type Card = {
   due_at: number;
 };
 
-async function loadDeck(id: number) {
+type StudyMode = "due" | "missed" | "all" | "right";
+
+function parseMode(raw: string | undefined): StudyMode {
+  return raw === "missed" || raw === "all" || raw === "right" ? raw : "due";
+}
+
+// Pick the SQL clause for the chosen study mode. All modes return the same
+// columns and ordering — only the WHERE clause changes.
+function modeQuery(deckId: number, mode: StudyMode): { sql: string; args: (string | number)[] } {
+  const cols = `id, hanzi, pinyin, gloss, hsk_level, example_sentence, box, due_at,
+                grammar_point_id, matched_text`;
+  if (mode === "all") {
+    return {
+      sql: `SELECT ${cols} FROM cards WHERE deck_id = ? ORDER BY box ASC, id ASC`,
+      args: [deckId],
+    };
+  }
+  if (mode === "missed") {
+    return {
+      sql: `SELECT ${cols} FROM cards c WHERE c.deck_id = ?
+            AND (
+              SELECT got_it FROM reviews r
+              WHERE r.card_id = c.id
+              ORDER BY r.reviewed_at DESC LIMIT 1
+            ) = 0
+            ORDER BY box ASC, id ASC`,
+      args: [deckId],
+    };
+  }
+  if (mode === "right") {
+    return {
+      sql: `SELECT ${cols} FROM cards c WHERE c.deck_id = ?
+            AND (
+              SELECT got_it FROM reviews r
+              WHERE r.card_id = c.id
+              ORDER BY r.reviewed_at DESC LIMIT 1
+            ) = 1
+            ORDER BY box ASC, id ASC`,
+      args: [deckId],
+    };
+  }
+  return {
+    sql: `SELECT ${cols} FROM cards
+          WHERE deck_id = ? AND due_at <= ?
+          ORDER BY box ASC, due_at ASC`,
+    args: [deckId, Math.floor(Date.now() / 1000)],
+  };
+}
+
+async function loadDeck(id: number, mode: StudyMode = "due") {
   const client = db();
   const deckRes = await client.execute({
     sql: `SELECT d.id, d.name, d.deck_type, d.created_at, d.source_id,
@@ -72,15 +121,7 @@ async function loadDeck(id: number) {
     (Math.floor(Date.now() / 1000) - createdAt) / 86400,
   );
 
-  const now = Math.floor(Date.now() / 1000);
-  const dueRes = await client.execute({
-    sql: `SELECT id, hanzi, pinyin, gloss, hsk_level, example_sentence, box, due_at,
-                 grammar_point_id, matched_text
-          FROM cards
-          WHERE deck_id = ? AND due_at <= ?
-          ORDER BY box ASC, due_at ASC`,
-    args: [id, now],
-  });
+  const dueRes = await client.execute(modeQuery(id, mode));
   const totalRes = await client.execute({
     sql: "SELECT COUNT(*) as c FROM cards WHERE deck_id = ?",
     args: [id],
@@ -239,6 +280,45 @@ function ProgressStats({ progress }: { progress: DeckProgress }) {
   );
 }
 
+function DrillLink({
+  deckId,
+  mode,
+  label,
+  count,
+  tone,
+}: {
+  deckId: number;
+  mode: "missed" | "right" | "all";
+  label: string;
+  count: number;
+  tone?: "ok" | "warn";
+}) {
+  const disabled = count === 0;
+  const base =
+    "flex items-center justify-between rounded-md border px-3 py-2 text-sm transition";
+  const palette = disabled
+    ? "border-zinc-200 text-zinc-400 dark:border-zinc-800 dark:text-zinc-600 cursor-not-allowed"
+    : tone === "warn"
+      ? "border-rose-300 text-rose-900 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-200 dark:hover:bg-rose-900/20"
+      : tone === "ok"
+        ? "border-emerald-300 text-emerald-900 hover:bg-emerald-50 dark:border-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-900/20"
+        : "border-zinc-300 hover:border-zinc-500 dark:border-zinc-700";
+  if (disabled) {
+    return (
+      <span className={`${base} ${palette}`}>
+        <span className="font-medium">{label}</span>
+        <span className="tabular-nums text-xs">0</span>
+      </span>
+    );
+  }
+  return (
+    <Link href={`/decks/${deckId}?mode=${mode}`} className={`${base} ${palette}`}>
+      <span className="font-medium">{label}</span>
+      <span className="tabular-nums text-xs">{count}</span>
+    </Link>
+  );
+}
+
 function Stat({
   label,
   value,
@@ -273,16 +353,47 @@ const STATUS_STYLE: Record<DeckStatus, string> = {
 
 export default async function DeckPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ mode?: string }>;
 }) {
   const { id } = await params;
-  const data = await loadDeck(Number(id));
+  const sp = await searchParams;
+  const mode = parseMode(sp.mode);
+  const data = await loadDeck(Number(id), mode);
   if (!data) notFound();
 
   const { deck, due, total, reviewedCount, status, progress, originalText, ageDays } = data;
   const ready = ageDays >= ORIGINAL_PROMPT_AFTER_DAYS;
   const testReady = total > 0 && reviewedCount >= total;
+
+  // Empty result on a non-default mode — show a "nothing to drill" notice
+  // instead of bouncing back to the SRS caught-up screen.
+  if (due.length === 0 && mode !== "due") {
+    return (
+      <main className="mx-auto max-w-xl px-6 py-10">
+        <div className="mb-6">
+          <Link
+            href={`/decks/${deck.id}`}
+            className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+          >
+            ← {deck.name}
+          </Link>
+        </div>
+        <div className="rounded-lg border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-700">
+          <p className="text-lg">No cards in this set.</p>
+          <p className="mt-1 text-sm text-zinc-500">
+            {mode === "missed"
+              ? "You haven't missed any cards yet."
+              : mode === "right"
+                ? "You haven't gotten any cards right yet."
+                : "This deck is empty."}
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   if (due.length === 0) {
     return (
@@ -340,6 +451,36 @@ export default async function DeckPage({
                   Test unlocks once every card has been reviewed at least once.
                 </p>
               )}
+            </div>
+
+            <div className="mt-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+              <div className="text-sm font-medium">Drill the deck</div>
+              <p className="mt-0.5 text-xs text-zinc-500">
+                Practice between SRS intervals. Reviews still count — misses
+                drop a card to box 1, hits advance the box.
+              </p>
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <DrillLink
+                  deckId={deck.id}
+                  mode="missed"
+                  label="Missed only"
+                  count={progress.needWork}
+                  tone="warn"
+                />
+                <DrillLink
+                  deckId={deck.id}
+                  mode="right"
+                  label="Got-right only"
+                  count={progress.gotRight}
+                  tone="ok"
+                />
+                <DrillLink
+                  deckId={deck.id}
+                  mode="all"
+                  label="Whole deck"
+                  count={total}
+                />
+              </div>
             </div>
           </>
         )}

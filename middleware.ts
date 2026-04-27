@@ -5,11 +5,13 @@ import { COOKIE_NAME, cookieIsValid } from "@/lib/auth";
 //   /login   — the password form itself
 //   /study-next — accepts ?t=<password> so the Telegram link can sign you
 //                 in on first tap. Without ?t, falls through to /login.
+//   /api/* — server-to-server endpoints check their own ?t=<password>.
 const PUBLIC_PATHS = new Set(["/login", "/study-next"]);
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   if (PUBLIC_PATHS.has(pathname)) return NextResponse.next();
+  if (pathname.startsWith("/api/")) return NextResponse.next();
   const cookie = req.cookies.get(COOKIE_NAME)?.value;
   if (await cookieIsValid(cookie)) return NextResponse.next();
 
