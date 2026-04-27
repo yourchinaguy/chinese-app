@@ -1,12 +1,31 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { renameDeck } from "../actions";
+
+// Split a deck name into [main, sub]. For chapter-imported decks the stored
+// name is "<source title> · Ch N: <chapter title>" — we surface the chapter
+// part as the headline and the source as a small subtitle so the page header
+// doesn't wrap to three lines.
+function splitDeckName(name: string): { main: string; sub: string | null } {
+  const m = name.match(/^(.+?)\s*·\s*(Ch\s*\d+.*)$/i);
+  if (m) return { main: m[2].trim(), sub: m[1].trim() };
+  return { main: name, sub: null };
+}
 
 // Click-to-edit deck title. Pencil icon next to the h1; click → input
 // replaces the heading; Enter saves, Esc cancels. Server action revalidates
 // /decks and /decks/[id] so the new name appears everywhere on next render.
-export function DeckTitle({ deckId, name }: { deckId: number; name: string }) {
+export function DeckTitle({
+  deckId,
+  name,
+  sourceId,
+}: {
+  deckId: number;
+  name: string;
+  sourceId?: number | null;
+}) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(name);
   const [pending, startTransition] = useTransition();
@@ -42,17 +61,34 @@ export function DeckTitle({ deckId, name }: { deckId: number; name: string }) {
   }
 
   if (!editing) {
+    const { main, sub } = splitDeckName(name);
     return (
-      <div className="flex items-baseline gap-2">
-        <h1 className="text-2xl font-semibold">{name}</h1>
-        <button
-          onClick={open}
-          aria-label="Rename deck"
-          title="Rename"
-          className="text-sm text-zinc-500 underline hover:text-zinc-900 dark:hover:text-zinc-200"
-        >
-          rename
-        </button>
+      <div className="min-w-0 flex-1">
+        {sub && (
+          <div className="truncate text-xs text-zinc-500">
+            {sourceId ? (
+              <Link
+                href={`/sources/${sourceId}`}
+                className="hover:text-zinc-900 hover:underline dark:hover:text-zinc-200"
+              >
+                {sub}
+              </Link>
+            ) : (
+              sub
+            )}
+          </div>
+        )}
+        <div className="flex items-baseline gap-2">
+          <h1 className="text-2xl font-semibold">{main}</h1>
+          <button
+            onClick={open}
+            aria-label="Rename deck"
+            title="Rename"
+            className="text-sm text-zinc-500 underline hover:text-zinc-900 dark:hover:text-zinc-200"
+          >
+            rename
+          </button>
+        </div>
       </div>
     );
   }

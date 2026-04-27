@@ -55,10 +55,13 @@ export async function getDeckStatus(
 export type DeckProgress = {
   total: number;
   reviewedCount: number;
-  mastered: number;
-  struggling: number;
+  gotRight: number; // last review was got_it = 1
+  needWork: number; // last review was got_it = 0
+  stillToLearn: number; // never reviewed
+  mastered: number; // box >= 5 (graduated, full SRS run)
+  struggling: number; // missed at least once and not yet graduated
   dueNow: number;
-  nextDueAt: number | null; // unix seconds; earliest non-mastered due_at
+  nextDueAt: number | null;
   lastReviewedAt: number | null;
   latestTest: {
     passed: boolean;
@@ -108,6 +111,28 @@ export async function getDeckProgress(
   });
   const struggling = Number(strugglingRes.rows[0].c);
 
+  // Last-review stats: bucket each reviewed card by whether the most-recent
+  // review was correct. Reflects the user's current standing right now —
+  // not an SRS graduation milestone.
+  const lastReviewRes = await client.execute({
+    sql: `SELECT
+            SUM(CASE WHEN last_got = 1 THEN 1 ELSE 0 END) AS got_right,
+            SUM(CASE WHEN last_got = 0 THEN 1 ELSE 0 END) AS need_work
+          FROM (
+            SELECT (
+              SELECT got_it FROM reviews r
+              WHERE r.card_id = c.id
+              ORDER BY r.reviewed_at DESC LIMIT 1
+            ) AS last_got
+            FROM cards c
+            WHERE c.deck_id = ? AND c.grammar_point_id IS NULL
+          ) WHERE last_got IS NOT NULL`,
+    args: [deckId],
+  });
+  const gotRight = Number(lastReviewRes.rows[0].got_right ?? 0);
+  const needWork = Number(lastReviewRes.rows[0].need_work ?? 0);
+  const stillToLearn = total - reviewedCount;
+
   const dueRes = await client.execute({
     sql: `SELECT COUNT(*) AS c FROM cards
           WHERE deck_id = ? AND due_at <= ? AND grammar_point_id IS NULL`,
@@ -151,6 +176,9 @@ export async function getDeckProgress(
   return {
     total,
     reviewedCount,
+    gotRight,
+    needWork,
+    stillToLearn,
     mastered,
     struggling,
     dueNow,

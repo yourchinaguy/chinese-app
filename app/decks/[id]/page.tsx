@@ -23,6 +23,7 @@ export type Deck = {
   id: number;
   name: string;
   deckType: "vocab" | "grammar";
+  sourceId?: number | null;
 };
 
 export type Card = {
@@ -40,7 +41,7 @@ export type Card = {
 async function loadDeck(id: number) {
   const client = db();
   const deckRes = await client.execute({
-    sql: `SELECT d.id, d.name, d.deck_type, d.created_at,
+    sql: `SELECT d.id, d.name, d.deck_type, d.created_at, d.source_id,
                  s.original_text
           FROM decks d
           LEFT JOIN sources s ON s.id = d.source_id
@@ -52,10 +53,15 @@ async function loadDeck(id: number) {
     String(deckRes.rows[0].deck_type ?? "vocab") === "grammar"
       ? "grammar"
       : "vocab";
+  const sourceId =
+    deckRes.rows[0].source_id === null
+      ? null
+      : Number(deckRes.rows[0].source_id);
   const deck: Deck = {
     id: Number(deckRes.rows[0].id),
     name: String(deckRes.rows[0].name),
     deckType,
+    sourceId,
   };
   const createdAt = Number(deckRes.rows[0].created_at);
   const originalText =
@@ -174,28 +180,30 @@ function formatDueIn(unix: number): string {
 }
 
 function ProgressStats({ progress }: { progress: DeckProgress }) {
-  const remaining = progress.total - progress.mastered;
-  const masteredPct = progress.total > 0 ? Math.round((progress.mastered / progress.total) * 100) : 0;
+  const total = progress.total;
+  const gotRightPct = total > 0 ? Math.round((progress.gotRight / total) * 100) : 0;
+  const needWorkPct = total > 0 ? Math.round((progress.needWork / total) * 100) : 0;
   return (
     <div className="mt-4 space-y-3 rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm dark:border-zinc-800 dark:bg-zinc-900/40">
       <div>
         <div className="flex items-baseline justify-between">
-          <span className="font-medium">Mastered</span>
+          <span className="font-medium">Got right</span>
           <span className="tabular-nums text-zinc-700 dark:text-zinc-300">
-            {progress.mastered} / {progress.total} ({masteredPct}%)
+            {progress.gotRight} / {total} ({gotRightPct}%)
           </span>
         </div>
-        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-          <div
-            className="h-full bg-emerald-500"
-            style={{ width: `${masteredPct}%` }}
-          />
+        <div className="mt-2 flex h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+          <div className="h-full bg-emerald-500" style={{ width: `${gotRightPct}%` }} />
+          <div className="h-full bg-rose-500" style={{ width: `${needWorkPct}%` }} />
         </div>
       </div>
+      <div className="grid grid-cols-3 gap-2 text-xs">
+        <Stat label="Got right" value={String(progress.gotRight)} tone="ok" />
+        <Stat label="Need work" value={String(progress.needWork)} tone="warn" />
+        <Stat label="Still to learn" value={String(progress.stillToLearn)} />
+      </div>
       <div className="grid grid-cols-2 gap-2 text-xs">
-        <Stat label="Reviewed" value={`${progress.reviewedCount} / ${progress.total}`} />
-        <Stat label="Need work" value={String(progress.struggling)} />
-        <Stat label="Still to learn" value={String(remaining)} />
+        <Stat label="Reviewed" value={`${progress.reviewedCount} / ${total}`} />
         <Stat
           label={progress.dueNow > 0 ? "Due now" : "Next due"}
           value={
@@ -207,30 +215,49 @@ function ProgressStats({ progress }: { progress: DeckProgress }) {
           }
         />
       </div>
-      {progress.lastReviewedAt && (
-        <div className="text-xs text-zinc-500">
-          Last studied {formatRelative(progress.lastReviewedAt)}
-        </div>
-      )}
-      {progress.latestTest && (
-        <div className="text-xs text-zinc-500">
-          Last test{" "}
-          {progress.latestTest.passed
-            ? "🟢 passed"
-            : `📚 ${progress.latestTest.totalCards - progress.latestTest.missedCount}/${progress.latestTest.totalCards}`}
-          {" · "}
-          {formatRelative(progress.latestTest.completedAt)}
-        </div>
-      )}
+      <div className="space-y-0.5 text-xs text-zinc-500">
+        {progress.lastReviewedAt && (
+          <div>Last studied {formatRelative(progress.lastReviewedAt)}</div>
+        )}
+        {progress.mastered > 0 && (
+          <div>
+            🟢 {progress.mastered} graduated to mastered (5 in a row)
+          </div>
+        )}
+        {progress.latestTest && (
+          <div>
+            Last test{" "}
+            {progress.latestTest.passed
+              ? "🟢 passed"
+              : `📚 ${progress.latestTest.totalCards - progress.latestTest.missedCount}/${progress.latestTest.totalCards}`}
+            {" · "}
+            {formatRelative(progress.latestTest.completedAt)}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone?: "ok" | "warn";
+}) {
+  const valueClass =
+    tone === "ok"
+      ? "text-emerald-700 dark:text-emerald-400"
+      : tone === "warn"
+        ? "text-rose-700 dark:text-rose-400"
+        : "";
   return (
     <div className="flex items-baseline justify-between rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 dark:border-zinc-800 dark:bg-zinc-950">
       <span className="text-zinc-500">{label}</span>
-      <span className="tabular-nums font-medium">{value}</span>
+      <span className={`tabular-nums font-medium ${valueClass}`}>{value}</span>
     </div>
   );
 }
@@ -268,10 +295,10 @@ export default async function DeckPage({
             ← decks
           </Link>
         </div>
-        <div className="flex items-center gap-2">
-          <DeckTitle deckId={deck.id} name={deck.name} />
+        <div className="flex items-start gap-3">
+          <DeckTitle deckId={deck.id} name={deck.name} sourceId={deck.sourceId} />
           <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[status]}`}
+            className={`mt-1 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[status]}`}
           >
             {status}
           </span>
