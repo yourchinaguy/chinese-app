@@ -24,6 +24,14 @@ type CardStat = {
   box: number;
 };
 
+// Mirror DeckTitle's splitter so the history header doesn't show the long
+// "<source> · Ch N: <chapter>" form on a narrow screen.
+function splitDeckName(name: string): { main: string; sub: string | null } {
+  const m = name.match(/^(.+?)\s*·\s*(Ch\s*\d+.*)$/i);
+  if (m) return { main: m[2].trim(), sub: m[1].trim() };
+  return { main: name, sub: null };
+}
+
 function formatDate(unix: number): string {
   const d = new Date(unix * 1000);
   return d.toLocaleString(undefined, {
@@ -99,6 +107,7 @@ export default async function HistoryPage({
 
   const troubled = cards.filter((c) => c.misses > 0).slice(0, 50);
   const untouched = cards.filter((c) => c.reviews === 0);
+  const { main, sub } = splitDeckName(deck.name);
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
@@ -107,12 +116,19 @@ export default async function HistoryPage({
           href={`/decks/${deck.id}`}
           className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
         >
-          ← {deck.name}
+          ← {main}
         </Link>
       </div>
 
       <h1 className="text-2xl font-semibold tracking-tight">History</h1>
-      <div className="mt-1 text-sm text-zinc-500">{deck.name}</div>
+      <div className="mt-1 text-sm text-zinc-500">
+        {main}
+        {sub && (
+          <span className="block text-xs text-zinc-400 dark:text-zinc-500">
+            {sub}
+          </span>
+        )}
+      </div>
 
       <section className="mt-8">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
@@ -161,26 +177,25 @@ export default async function HistoryPage({
         ) : (
           <ul className="mt-3 divide-y divide-zinc-200 rounded-md border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
             {troubled.map((c) => (
-              <li
-                key={c.id}
-                className="flex items-baseline justify-between gap-3 px-4 py-2.5 text-sm"
-              >
-                <div className="flex min-w-0 items-baseline gap-3">
-                  <span className="shrink-0 text-base">{c.hanzi}</span>
-                  {c.pinyin && (
-                    <span className="shrink-0 text-xs text-zinc-500">
-                      {c.pinyin}
-                    </span>
-                  )}
-                  {c.gloss && (
-                    <span className="min-w-0 truncate text-zinc-700 dark:text-zinc-300">
-                      {c.gloss}
-                    </span>
-                  )}
+              <li key={c.id} className="px-4 py-2.5 text-sm">
+                <div className="flex items-baseline justify-between gap-2">
+                  <div className="flex min-w-0 items-baseline gap-2">
+                    <span className="shrink-0 text-base">{c.hanzi}</span>
+                    {c.pinyin && (
+                      <span className="shrink-0 text-xs text-zinc-500">
+                        {c.pinyin}
+                      </span>
+                    )}
+                  </div>
+                  <span className="shrink-0 text-[11px] uppercase tracking-wide text-zinc-500">
+                    {c.misses}× · box {c.box}
+                  </span>
                 </div>
-                <span className="shrink-0 text-xs text-zinc-500">
-                  {c.misses} miss{c.misses === 1 ? "" : "es"} · box {c.box}
-                </span>
+                {c.gloss && (
+                  <div className="mt-0.5 break-words text-zinc-700 dark:text-zinc-300">
+                    {c.gloss}
+                  </div>
+                )}
               </li>
             ))}
           </ul>
