@@ -200,7 +200,7 @@ function ProgressStats({ progress }: { progress: DeckProgress }) {
       <div className="grid grid-cols-3 gap-2 text-xs">
         <Stat label="Got right" value={String(progress.gotRight)} tone="ok" />
         <Stat label="Need work" value={String(progress.needWork)} tone="warn" />
-        <Stat label="Still to learn" value={String(progress.stillToLearn)} />
+        <Stat label="Still to review" value={String(progress.stillToLearn)} />
       </div>
       <div className="grid grid-cols-2 gap-2 text-xs">
         <Stat label="Reviewed" value={`${progress.reviewedCount} / ${total}`} />
@@ -295,10 +295,10 @@ export default async function DeckPage({
             ← decks
           </Link>
         </div>
-        <div className="flex items-start gap-3">
-          <DeckTitle deckId={deck.id} name={deck.name} sourceId={deck.sourceId} />
+        <DeckTitle deckId={deck.id} name={deck.name} sourceId={deck.sourceId} />
+        <div className="mt-2">
           <span
-            className={`mt-1 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[status]}`}
+            className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[status]}`}
           >
             {status}
           </span>
