@@ -8,6 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "migrate": "node --env-file=.env.local scripts/migrate.mjs",
+    "build-cedict": "node scripts/build-cedict.mjs",
+    "backfill-dictionary": "node --env-file=.env.local scripts/backfill-dictionary.mjs",
+    "prune-bcfs-1st": "node --env-file=.env.local scripts/prune-business-chinese-1st-edition.mjs",
+    "rechunk-by-chapter": "node --env-file=.env.local scripts/rechunk-by-chapter.mjs",
     "import-text": "tsx --env-file=.env.local scripts/import-text.ts",
     "normalize-pinyin": "tsx --env-file=.env.local scripts/normalize-pinyin.ts"
   },

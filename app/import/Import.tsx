@@ -3,9 +3,12 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { analyzeText, createDeck, type AnalyzeResult } from "./actions";
+import { splitCombinedGloss } from "@/lib/gloss";
 import type { GradedWord, Verdict } from "@/lib/grade";
 import type { GrammarMatch } from "@/lib/grammar";
 import type { HskLevel } from "@/lib/hsk";
+
+const MAX_PREVIEW_GLOSSES = 3;
 
 type Kind = "article" | "podcast" | "other";
 
@@ -251,6 +254,7 @@ function Analysis({
           selected={selected}
           toggle={toggle}
           defaultUnchecked
+          hideEmpty
         />
       )}
 
@@ -262,6 +266,7 @@ function Analysis({
           selected={selected}
           toggle={toggle}
           defaultUnchecked
+          hideEmpty
         />
       )}
 
@@ -315,6 +320,7 @@ function WordPicker({
   words,
   selected,
   toggle,
+  hideEmpty = false,
 }: {
   title: string;
   subtitle: string;
@@ -322,14 +328,37 @@ function WordPicker({
   selected: Set<string>;
   toggle: (hanzi: string) => void;
   defaultUnchecked?: boolean;
+  hideEmpty?: boolean;
 }) {
   if (words.length === 0) return null;
+
+  // Pre-clean glosses: drop CC-CEDICT metadata noise, cap to top N meanings.
+  const prepared = words.map((w) => {
+    const cleaned = splitCombinedGloss(w.gloss).slice(0, MAX_PREVIEW_GLOSSES);
+    return { ...w, glossList: cleaned };
+  });
+
+  // For beyond-HSK / too-hard sections, hide rows with zero info — those are
+  // mostly segmenter false-compounds (两个, 很多, 很大的) where neither HSK
+  // nor CEDICT has anything. They're un-selectable signal-wise.
+  const visible = hideEmpty
+    ? prepared.filter((w) => w.glossList.length > 0 || w.pinyin)
+    : prepared;
+  const hidden = prepared.length - visible.length;
+
+  if (visible.length === 0) return null;
+
   return (
     <section>
       <h2 className="text-lg font-medium">{title}</h2>
       <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{subtitle}</p>
+      {hidden > 0 && (
+        <p className="mt-1 text-xs text-zinc-500">
+          {hidden} word{hidden === 1 ? "" : "s"} hidden — no dictionary entry.
+        </p>
+      )}
       <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {words.map((w) => {
+        {visible.map((w) => {
           const isOn = selected.has(w.hanzi);
           return (
             <li key={w.hanzi}>
@@ -346,7 +375,7 @@ function WordPicker({
                   onChange={() => toggle(w.hanzi)}
                   className="mt-1"
                 />
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2">
                     <span className="text-xl">{w.hanzi}</span>
                     <span className="text-xs text-zinc-500">
@@ -358,9 +387,12 @@ function WordPicker({
                       </span>
                     )}
                   </div>
-                  {w.gloss && (
-                    <div className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">
-                      {w.gloss}
+                  {w.glossList.length > 0 && (
+                    <div
+                      className="mt-0.5 line-clamp-2 text-sm leading-snug text-zinc-600 dark:text-zinc-400"
+                      title={w.glossList.join(" · ")}
+                    >
+                      {w.glossList.join(" · ")}
                     </div>
                   )}
                 </div>

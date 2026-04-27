@@ -2,8 +2,11 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import { characterBreakdown, splitCombinedGloss } from "@/lib/gloss";
+import { usePinyinShown } from "@/lib/use-pinyin-shown";
 import { submitReview } from "./actions";
 import { OriginalVersionSection } from "./OriginalVersionSection";
+import { PinyinToggle } from "./PinyinToggle";
 import type { Card } from "./page";
 
 const INLINE_LIMIT = 3;
@@ -32,6 +35,7 @@ export function Review({
   const [revealed, setRevealed] = useState(false);
   const [pending, startTransition] = useTransition();
   const [finished, setFinished] = useState(false);
+  const [pinyinShown] = usePinyinShown();
 
   const current = sessionCards[idx];
 
@@ -86,16 +90,19 @@ export function Review({
 
   return (
     <main className="mx-auto flex min-h-screen max-w-xl flex-col px-6 py-6">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between gap-2">
         <Link
           href="/decks"
           className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
         >
           ← decks
         </Link>
-        <span className="text-xs uppercase tracking-wide text-zinc-500">
-          {idx + 1} / {sessionCards.length} · box {current.box}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs uppercase tracking-wide text-zinc-500">
+            {idx + 1} / {sessionCards.length} · box {current.box}
+          </span>
+          <PinyinToggle />
+        </div>
       </div>
 
       <div className="h-1 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
@@ -119,6 +126,11 @@ export function Review({
           <div className="text-7xl font-medium tracking-wide sm:text-8xl">
             {current.hanzi}
           </div>
+          {pinyinShown && current.pinyin && !revealed && (
+            <div className="mt-3 text-xl text-zinc-500 dark:text-zinc-400">
+              {current.pinyin}
+            </div>
+          )}
 
           {revealed && (
             <div className="mt-6 space-y-3">
@@ -132,6 +144,7 @@ export function Review({
                 fallback={current.gloss}
                 cardKey={current.id}
               />
+              <CharacterBreakdown hanzi={current.hanzi} />
               {current.example_sentence && (
                 <div className="mt-4 max-w-md rounded-md border border-zinc-200 p-3 text-base leading-relaxed text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
                   <HighlightedSentence
@@ -225,20 +238,23 @@ function Meanings({
   // Reset the "show all" toggle whenever we move to a different card.
   useEffect(() => setShowAll(false), [cardKey]);
 
-  if (glosses.length === 0) {
-    if (!fallback) return null;
+  // If HSK had nothing, try to split a combined gloss string (CC-CEDICT
+  // style "; "-separated) so the learner sees every meaning, not just the
+  // first one before the separator.
+  const effective =
+    glosses.length > 0 ? glosses : splitCombinedGloss(fallback);
+
+  if (effective.length === 0) return null;
+  if (effective.length === 1) {
     return (
-      <div className="text-lg text-zinc-800 dark:text-zinc-200">{fallback}</div>
-    );
-  }
-  if (glosses.length === 1) {
-    return (
-      <div className="text-lg text-zinc-800 dark:text-zinc-200">{glosses[0]}</div>
+      <div className="text-lg text-zinc-800 dark:text-zinc-200">
+        {effective[0]}
+      </div>
     );
   }
 
-  const overflow = glosses.length > INLINE_LIMIT;
-  const visible = overflow && !showAll ? glosses.slice(0, INLINE_LIMIT) : glosses;
+  const overflow = effective.length > INLINE_LIMIT;
+  const visible = overflow && !showAll ? effective.slice(0, INLINE_LIMIT) : effective;
 
   return (
     <div className="mx-auto max-w-md text-left">
@@ -256,9 +272,43 @@ function Meanings({
           onClick={() => setShowAll(true)}
           className="mt-2 text-sm text-zinc-500 underline hover:text-zinc-800 dark:hover:text-zinc-200"
         >
-          Show all {glosses.length} meanings
+          Show all {effective.length} meanings
         </button>
       )}
+    </div>
+  );
+}
+
+function CharacterBreakdown({ hanzi }: { hanzi: string }) {
+  const parts = characterBreakdown(hanzi);
+  if (parts.length === 0) return null;
+  // Skip if no part has any HSK gloss — nothing useful to show.
+  const hasAny = parts.some((p) => p.glosses.length > 0);
+  if (!hasAny) return null;
+
+  return (
+    <div className="mx-auto mt-3 max-w-md rounded-md border border-zinc-200 bg-zinc-50 p-3 text-left text-xs dark:border-zinc-800 dark:bg-zinc-900/40">
+      <div className="mb-1 text-zinc-500">Character breakdown</div>
+      <ul className="space-y-1">
+        {parts.map((p, i) => (
+          <li key={`${p.char}-${i}`} className="flex items-baseline gap-2">
+            <span className="shrink-0 text-base text-zinc-800 dark:text-zinc-200">
+              {p.char}
+            </span>
+            {p.entry?.pinyin && (
+              <span className="shrink-0 text-zinc-500">{p.entry.pinyin}</span>
+            )}
+            <span className="min-w-0 truncate text-zinc-700 dark:text-zinc-300">
+              {p.glosses[0] ?? "—"}
+            </span>
+            {p.entry?.level && (
+              <span className="ml-auto shrink-0 text-zinc-400">
+                HSK {p.entry.level}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

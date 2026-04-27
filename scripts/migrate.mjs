@@ -80,6 +80,8 @@ const alters = [
   `ALTER TABLE cards ADD COLUMN grammar_point_id TEXT`,
   `ALTER TABLE cards ADD COLUMN matched_text TEXT`,
   `ALTER TABLE sources ADD COLUMN original_text TEXT`,
+  `ALTER TABLE decks ADD COLUMN chunk_index INTEGER`,
+  `ALTER TABLE decks ADD COLUMN chunk_total INTEGER`,
 ];
 
 // New tables added after the initial schema. Idempotent via IF NOT EXISTS.
@@ -92,6 +94,16 @@ const newTables = [
     known_count INTEGER NOT NULL
   )`,
   `CREATE INDEX IF NOT EXISTS idx_retests_pool ON retests(pool, completed_at)`,
+  `CREATE TABLE IF NOT EXISTS tests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    deck_id INTEGER NOT NULL,
+    passed INTEGER NOT NULL,
+    total_cards INTEGER NOT NULL,
+    missed_count INTEGER NOT NULL,
+    completed_at INTEGER NOT NULL,
+    FOREIGN KEY (deck_id) REFERENCES decks(id)
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_tests_deck ON tests(deck_id, completed_at)`,
 ];
 
 for (const sql of alters) {

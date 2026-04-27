@@ -1,7 +1,13 @@
-const SENTENCE_SPLIT = /([。！？；\n]+|[.!?](?:\s+|$))/g;
+// Sentence splitter. Lone newlines are treated as whitespace inside a
+// sentence — OCR and PDF copy-paste routinely line-wrap mid-sentence, and
+// splitting on \n produced fragment "sentences" like 越本土化了。 instead
+// of the full surrounding sentence.
+const SENTENCE_SPLIT = /([。！？；]+|[.!?](?:\s+|$))/g;
 
 export function splitSentences(text: string): string[] {
-  const parts = text.split(SENTENCE_SPLIT);
+  // Collapse line wraps into spaces so wrapped sentences re-join.
+  const flat = text.replace(/\s*\n\s*/g, " ").replace(/\s{2,}/g, " ");
+  const parts = flat.split(SENTENCE_SPLIT);
   const sentences: string[] = [];
   for (let i = 0; i < parts.length; i += 2) {
     const body = parts[i];

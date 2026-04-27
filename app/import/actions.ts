@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { lookupForCard } from "@/lib/dictionary";
 import { gradeText, type GradeResult } from "@/lib/grade";
 import { detectGrammarPoints, type GrammarMatch } from "@/lib/grammar";
 import type { HskLevel } from "@/lib/hsk";
@@ -22,7 +23,27 @@ export async function analyzeText(
   const grammar = detectGrammarPoints(text);
   const skipTokens = new Set(grammar.flatMap((m) => m.connectives));
   const grade = gradeText(text, { knownSet, targetLevel, skipTokens });
-  return { ...grade, grammar };
+
+  // Enrich BEYOND_HSK / TOO_HARD words with CC-CEDICT pinyin + gloss so the
+  // import preview shows meaning for advanced vocabulary. Cache by hanzi to
+  // skip duplicate lookups across repeated tokens.
+  const cache = new Map<string, { pinyin: string | null; gloss: string | null }>();
+  const enriched = grade.graded.map((g) => {
+    if (g.pinyin && g.gloss) return g;
+    let fb = cache.get(g.hanzi);
+    if (!fb) {
+      const r = lookupForCard(g.hanzi);
+      fb = { pinyin: r.pinyin, gloss: r.gloss };
+      cache.set(g.hanzi, fb);
+    }
+    return {
+      ...g,
+      pinyin: g.pinyin ?? fb.pinyin,
+      gloss: g.gloss ?? fb.gloss,
+    };
+  });
+
+  return { ...grade, graded: enriched, grammar };
 }
 
 export type CreateDeckInput = {

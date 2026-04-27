@@ -36,6 +36,11 @@ export type VocabPack = {
   description: string;
   source?: { name: string; url?: string };
   words: VocabPackWord[];
+  // Optional path (relative to project root) to a chapter-tagged text file
+  // — `== N. Title ==` headers separating each chapter. When present, the
+  // pack page offers an "Import by chapter" mode that creates one deck per
+  // chapter with example sentences pulled from that chapter's text.
+  chapterTextPath?: string;
 };
 
 export type VocabPackWord = {

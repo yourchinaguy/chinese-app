@@ -1,5 +1,6 @@
 import type { Client } from "@libsql/client";
 import { getStarterArticle } from "@/data/starter";
+import { lookupForCard } from "./dictionary";
 import { gradeText } from "./grade";
 import { detectGrammarPoints } from "./grammar";
 import { type HskLevel } from "./hsk";
@@ -88,6 +89,18 @@ export async function importTextAsDecks(
     for (const hanzi of selectedHanzi) {
       const g = byHanzi.get(hanzi);
       const example = findExampleSentence(text, hanzi);
+      // Grade gives us HSK data; for beyond-HSK words it returns nulls.
+      // Fall back to CC-CEDICT so cards always have pinyin + gloss when
+      // the dictionary has anything to say about the word.
+      let pinyin = toToneMarks(g?.pinyin) ?? null;
+      let gloss = g?.gloss ?? null;
+      let hskLevel: number | null = g?.hskLevel ?? null;
+      if (!pinyin || !gloss) {
+        const fb = lookupForCard(hanzi);
+        if (!pinyin) pinyin = fb.pinyin;
+        if (!gloss) gloss = fb.gloss;
+        if (hskLevel === null) hskLevel = fb.hskLevel;
+      }
       await client.execute({
         sql: `INSERT INTO cards (deck_id, hanzi, pinyin, gloss, hsk_level, example_sentence,
                                   box, due_at, last_reviewed_at, created_at)
@@ -95,9 +108,9 @@ export async function importTextAsDecks(
         args: [
           deckId,
           hanzi,
-          toToneMarks(g?.pinyin) ?? null,
-          g?.gloss ?? null,
-          g?.hskLevel ?? null,
+          pinyin,
+          gloss,
+          hskLevel,
           example,
           srs.box,
           srs.due_at,

@@ -43,3 +43,7 @@ next-env.d.ts
 # Personal-study photos dropped for OCR processing.
 # Keep README and .gitkeep tracked; ignore everything inside subfolders.
 /inbox/*/
+
+# Source images for the OCR pipeline — large binary HEIC photos.
+# Cleaned chapter text lives in data/chapters/, which is committed.
+/images business chinese/

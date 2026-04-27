@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getVocabPack } from "@/data/vocab-packs";
 import { getHskLevel } from "@/lib/hsk";
+import { getChapterStats } from "./actions";
 import { PackActions } from "./PackActions";
 
 export default async function PackPage({
@@ -12,6 +13,8 @@ export default async function PackPage({
   const { slug } = await params;
   const pack = getVocabPack(slug);
   if (!pack) notFound();
+
+  const chapterStats = await getChapterStats(slug);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
@@ -44,7 +47,11 @@ export default async function PackPage({
         </div>
       )}
 
-      <PackActions slug={pack.slug} count={pack.words.length} />
+      <PackActions
+        slug={pack.slug}
+        count={pack.words.length}
+        chapterStats={chapterStats}
+      />
 
       <details className="mt-8" open={pack.words.length <= 50}>
         <summary className="cursor-pointer select-none text-sm font-medium">
